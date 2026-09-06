@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="JASA KAMPUNG — layanan jasa terpercaya untuk kebutuhan rumah, teknik, antar jemput, pendamping, dan antrian."
+    >
+
+    <meta
+        name="theme-color"
+        content="#ff6b00"
+    >
+
+    <title>JASA KAMPUNG — Solusi Jasa Warga</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- SUPABASE -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+</head>
+
+<body>
+
+<!-- =========================================================
+     HEADER
+========================================================= -->
+
+<header class="header" id="header">
+
+    <div class="container header-inner">
+
+        <a href="#home" class="logo">
+            <span class="logo-icon">🏠</span>
+            <span class="logo-text">
+                <strong>JASA</strong>
+                <small>KAMPUNG</small>
+            </span>
+        </a>
+
+        <button
+            type="button"
+            class="notification-button"
+            id="notificationBtn"
+            aria-label="Notifikasi"
+        >
+            🔔
+            <span
+                class="notification-badge"
+                id="notificationBadge"
+                hidden
+            >
+                0
+            </span>
+        </button>
+
+    </div>
+
+</header>
+
+
+<!-- =========================================================
+     MAIN
+========================================================= -->
+
+<main>
+
+<!-- =========================================================
+     HERO
+========================================================= -->
+
+<section class="hero" id="home">
+
+    <div class="container hero-content">
+
+        <span class="hero-badge">
+            🏡 Layanan Jasa Warga
+        </span>
+
+        <h1>
+            Butuh Bantuan?
+            <span>Kami Siap Membantu.</span>
+        </h1>
+
+        <p>
+            Temukan berbagai jasa terpercaya di sekitar Anda.
+            Mudah dipesan, harga jelas, dan praktis.
+        </p>
+
+
+        <!-- SEARCH -->
+
+        <div class="search-box">
+
+            <span class="search-icon">🔍</span>
+
+            <input
+                type="search"
+                id="serviceSearch"
+                placeholder="Cari jasa yang Anda butuhkan..."
+                autocomplete="off"
+            >
+
+            <button
+                type="button"
+                id="clearSearch"
+                class="search-clear"
+                hidden
+                aria-label="Hapus pencarian"
+            >
+                ×
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     CATEGORY
+========================================================= -->
+
+<section class="category-section">
+
+    <div class="container">
+
+        <div class="category-list">
+
+            <button
+                type="button"
+                class="category-item active"
+                data-category="Semua"
+            >
+                <span>🏠</span>
+                <small>Semua</small>
+            </button>
+
+            <button
+                type="button"
+                class="category-item"
+                data-category="Rumah"
+            >
+                <span>🧹</span>
+                <small>Rumah</small>
+            </button>
+
+            <button
+                type="button"
+                class="category-item"
+                data-category="Teknik"
+            >
+                <span>🔧</span>
+                <small>Teknik</small>
+            </button>
+
+            <button
+                type="button"
+                class="category-item"
+                data-category="Antar Jemput"
+            >
+                <span>🚗</span>
+                <small>Antar Jemput</small>
+            </button>
+
+            <button
+                type="button"
+                class="category-item"
+                data-category="Pendamping"
+            >
+                <span>🤝</span>
+                <small>Pendamping</small>
+            </button>
+
+            <button
+                type="button"
+                class="category-item"
+                data-category="Antrian"
+            >
+                <span>🎫</span>
+                <small>Antrian</small>
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     SERVICES
+========================================================= -->
+
+<section class="services-section" id="services">
+
+    <div class="container">
+
+        <div class="section-heading">
+
+            <div>
+                <span class="section-label">
+                    LAYANAN KAMI
+                </span>
+
+                <h2>
+                    Pilih Jasa yang Anda Butuhkan
+                </h2>
+            </div>
+
+            <button
+                type="button"
+                id="showAllServices"
+                class="text-button"
+            >
+                Lihat Semua
+            </button>
+
+        </div>
+
+
+        <!--
+            SERVICE LIST
+            Data jasa dapat dirender dari Supabase
+            menggunakan script.js
+        -->
+
+        <div
+            class="service-grid"
+            id="serviceList"
+        >
+
+            <!--
+            Jika script.js belum melakukan render dari Supabase,
+            contoh kartu dapat diletakkan di sini.
+            -->
+
+        </div>
+
+
+        <!-- EMPTY -->
+
+        <div
+            id="serviceEmptyState"
+            class="empty-state"
+            hidden
+        >
+            <div class="empty-icon">🔎</div>
+
+            <h3>
+                Jasa tidak ditemukan
+            </h3>
+
+            <p>
+                Coba gunakan kata pencarian lain
+                atau pilih kategori berbeda.
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     TRUST
+========================================================= -->
+
+<section class="trust-section">
+
+    <div class="container">
+
+        <div class="trust-grid">
+
+            <div class="trust-item">
+                <span>✓</span>
+                <div>
+                    <strong>Harga Transparan</strong>
+                    <small>
+                        Harga ditampilkan sebelum pesan.
+                    </small>
+                </div>
+            </div>
+
+            <div class="trust-item">
+                <span>✓</span>
+                <div>
+                    <strong>Mudah Dipesan</strong>
+                    <small>
+                        Pesan jasa langsung dari HP.
+                    </small>
+                </div>
+            </div>
+
+            <div class="trust-item">
+                <span>✓</span>
+                <div>
+                    <strong>Layanan Lokal</strong>
+                    <small>
+                        Untuk kebutuhan warga sekitar.
+                    </small>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     HOW TO ORDER
+========================================================= -->
+
+<section class="how-section">
+
+    <div class="container">
+
+        <div class="section-heading centered">
+
+            <span class="section-label">
+                CARA PESAN
+            </span>
+
+            <h2>
+                Pesan Jasa Dalam 4 Langkah
+            </h2>
+
+        </div>
+
+
+        <div class="steps-grid">
+
+            <div class="step-item">
+                <span class="step-number">1</span>
+                <h3>Pilih Jasa</h3>
+                <p>
+                    Pilih layanan yang Anda butuhkan.
+                </p>
+            </div>
+
+            <div class="step-item">
+                <span class="step-number">2</span>
+                <h3>Isi Data</h3>
+                <p>
+                    Masukkan nama, nomor HP,
+                    alamat dan kebutuhan.
+                </p>
+            </div>
+
+            <div class="step-item">
+                <span class="step-number">3</span>
+                <h3>Pilih Pembayaran</h3>
+                <p>
+                    Pilih metode pembayaran
+                    yang tersedia.
+                </p>
+            </div>
+
+            <div class="step-item">
+                <span class="step-number">4</span>
+                <h3>Pesanan Diproses</h3>
+                <p>
+                    Tim kami akan menghubungi
+                    Anda melalui WhatsApp.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     PARTNER
+========================================================= -->
+
+<section class="partner-section" id="partner">
+
+    <div class="container">
+
+        <div class="partner-card">
+
+            <div class="partner-content">
+
+                <span class="section-label">
+                    UNTUK WARGA
+                </span>
+
+                <h2>
+                    Mau Menjadi Mitra JASA KAMPUNG?
+                </h2>
+
+                <p>
+                    Punya keahlian dan ingin mendapatkan
+                    pelanggan dari sekitar lingkungan Anda?
+                    Bergabung menjadi mitra kami.
+                </p>
+
+                <button
+                    type="button"
+                    class="primary-button"
+                    id="partnerButton"
+                >
+                    Daftar Jadi Mitra
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+
+<!-- =========================================================
+     FOOTER
+========================================================= -->
+
+<footer class="footer">
+
+    <div class="container">
+
+        <div class="footer-grid">
+
+            <div class="footer-brand">
+
+                <div class="logo">
+                    <span class="logo-icon">🏠</span>
+
+                    <span class="logo-text">
+                        <strong>JASA</strong>
+                        <small>KAMPUNG</small>
+                    </span>
+                </div>
+
+                <p>
+                    Solusi jasa lokal untuk kebutuhan
+                    sehari-hari masyarakat.
+                </p>
+
+            </div>
+
+
+            <div class="footer-links">
+
+                <h4>Layanan</h4>
+
+                <button
+                    type="button"
+                    data-footer-category="Rumah"
+                >
+                    Jasa Rumah
+                </button>
+
+                <button
+                    type="button"
+                    data-footer-category="Teknik"
+                >
+                    Jasa Teknik
+                </button>
+
+                <button
+                    type="button"
+                    data-footer-category="Antar Jemput"
+                >
+                    Antar Jemput
+                </button>
+
+            </div>
+
+
+            <div class="footer-links">
+
+                <h4>Informasi</h4>
+
+                <button
+                    type="button"
+                    id="footerOrders"
+                >
+                    Pesanan Saya
+                </button>
+
+                <button
+                    type="button"
+                    id="footerProfile"
+                >
+                    Profil
+                </button>
+
+                <button
+                    type="button"
+                    id="footerPartner"
+                >
+                    Jadi Mitra
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="footer-bottom">
+
+            <p>
+                © <span id="currentYear"></span>
+                JASA KAMPUNG.
+                Semua hak dilindungi.
+            </p>
+
+        </div>
+
+    </div>
+
+</footer>
+
+
+<!-- =========================================================
+     BOTTOM NAVIGATION
+========================================================= -->
+
+<nav class="bottom-nav">
+
+    <button
+        type="button"
+        class="bottom-nav-item active"
+        data-nav="home"
+    >
+        <span>⌂</span>
+        <small>Beranda</small>
+    </button>
+
+    <button
+        type="button"
+        class="bottom-nav-item"
+        data-nav="services"
+    >
+        <span>▦</span>
+        <small>Layanan</small>
+    </button>
+
+    <button
+        type="button"
+        class="bottom-nav-item"
+        data-nav="orders"
+    >
+        <span>🧾</span>
+        <small>Pesanan</small>
+    </button>
+
+    <button
+        type="button"
+        class="bottom-nav-item"
+        data-nav="profile"
+    >
+        <span>👤</span>
+        <small>Profil</small>
+    </button>
+
+</nav>
+
+
+<!-- =========================================================
+     BOOKING MODAL
+========================================================= -->
+
+<div
+    class="modal"
+    id="bookingModal"
+    hidden
+>
+
+    <div class="modal-overlay" data-close-modal></div>
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <div>
+                <span class="section-label">
+                    PESAN JASA
+                </span>
+
+                <h2>
+                    Detail Pesanan
+                </h2>
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                data-close-modal
+                aria-label="Tutup"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form id="bookingForm">
+
+
+            <!-- SERVICE -->
+
+            <div class="selected-service-box">
+
+                <div>
+                    <small>Jasa yang dipilih</small>
+
+                    <strong id="selectedService">
+                        -
+                    </strong>
+                </div>
+
+                <strong
+                    id="selectedServicePrice"
+                    class="selected-price"
+                >
+                    Rp0
+                </strong>
+
+            </div>
+
+
+            <!-- NAME -->
+
+            <div class="form-group">
+
+                <label for="customerName">
+                    Nama Lengkap
+                </label>
+
+                <input
+                    type="text"
+                    id="customerName"
+                    name="customerName"
+                    placeholder="Masukkan nama Anda"
+                    autocomplete="name"
+                    required
+                >
+
+            </div>
+
+
+            <!-- PHONE -->
+
+            <div class="form-group">
+
+                <label for="customerPhone">
+                    Nomor WhatsApp
+                </label>
+
+                <input
+                    type="tel"
+                    id="customerPhone"
+                    name="customerPhone"
+                    placeholder="Contoh: 081234567890"
+                    autocomplete="tel"
+                    inputmode="tel"
+                    required
+                >
+
+            </div>
+
+
+            <!-- PROBLEM -->
+
+            <div class="form-group">
+
+                <label for="problemDescription">
+                    Kebutuhan / Keluhan
+                </label>
+
+                <textarea
+                    id="problemDescription"
+                    name="problemDescription"
+                    rows="3"
+                    placeholder="Jelaskan kebutuhan atau masalah Anda..."
+                    required
+                ></textarea>
+
+            </div>
+
+
+            <!-- ADDRESS -->
+
+            <div class="form-group">
+
+                <label for="customerAddress">
+                    Alamat
+                </label>
+
+                <textarea
+                    id="customerAddress"
+                    name="customerAddress"
+                    rows="3"
+                    placeholder="Masukkan alamat lengkap lokasi jasa..."
+                    required
+                ></textarea>
+
+            </div>
+
+
+            <!-- SCHEDULE -->
+
+            <div class="form-group">
+
+                <label for="scheduleDate">
+                    Jadwal
+                </label>
+
+                <input
+                    type="datetime-local"
+                    id="scheduleDate"
+                    name="scheduleDate"
+                    required
+                >
+
+            </div>
+
+
+            <!-- PHOTO -->
+
+            <div class="form-group">
+
+                <label for="problemPhoto">
+                    Foto Masalah
+                    <span class="optional">
+                        (Opsional)
+                    </span>
+                </label>
+
+                <input
+                    type="file"
+                    id="problemPhoto"
+                    name="problemPhoto"
+                    accept="image/*"
+                >
+
+                <div
+                    id="photoPreview"
+                    class="photo-preview"
+                    hidden
+                ></div>
+
+            </div>
+
+
+            <!-- =================================================
+                 PAYMENT
+            ================================================= -->
+
+            <div class="payment-section">
+
+                <div class="payment-heading">
+
+                    <div>
+                        <span class="section-label">
+                            PEMBAYARAN
+                        </span>
+
+                        <h3>
+                            Pilih Metode Pembayaran
+                        </h3>
+                    </div>
+
+                </div>
+
+
+                <div class="payment-methods">
+
+
+                    <!-- COD -->
+
+                    <label class="payment-option">
+
+                        <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="COD"
+                            checked
+                        >
+
+                        <span class="payment-option-content">
+
+                            <span class="payment-icon">
+                                💵
+                            </span>
+
+                            <span class="payment-info">
+
+                                <strong>
+                                    COD / Bayar di Tempat
+                                </strong>
+
+                                <small>
+                                    Bayar setelah layanan selesai
+                                </small>
+
+                            </span>
+
+                            <span class="payment-check">
+                                ✓
+                            </span>
+
+                        </span>
+
+                    </label>
+
+
+                    <!-- QRIS -->
+
+                    <label class="payment-option">
+
+                        <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="QRIS"
+                        >
+
+                        <span class="payment-option-content">
+
+                            <span class="payment-icon">
+                                📱
+                            </span>
+
+                            <span class="payment-info">
+
+                                <strong>
+                                    QRIS
+                                </strong>
+
+                                <small>
+                                    Bayar menggunakan QRIS
+                                </small>
+
+                            </span>
+
+                            <span class="payment-check">
+                                ✓
+                            </span>
+
+                        </span>
+
+                    </label>
+
+
+                    <!-- DANA -->
+
+                    <label class="payment-option">
+
+                        <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="DANA"
+                        >
+
+                        <span class="payment-option-content">
+
+                            <span class="payment-icon">
+                                💙
+                            </span>
+
+                            <span class="payment-info">
+
+                                <strong>
+                                    DANA
+                                </strong>
+
+                                <small>
+                                    Pembayaran melalui DANA
+                                </small>
+
+                            </span>
+
+                            <span class="payment-check">
+                                ✓
+                            </span>
+
+                        </span>
+
+                    </label>
+
+
+                    <!-- GOPAY -->
+
+                    <label class="payment-option">
+
+                        <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="GoPay"
+                        >
+
+                        <span class="payment-option-content">
+
+                            <span class="payment-icon">
+                                🟢
+                            </span>
+
+                            <span class="payment-info">
+
+                                <strong>
+                                    GoPay
+                                </strong>
+
+                                <small>
+                                    Pembayaran melalui GoPay
+                                </small>
+
+                            </span>
+
+                            <span class="payment-check">
+                                ✓
+                            </span>
+
+                        </span>
+
+                    </label>
+
+
+                    <!-- TRANSFER -->
+
+                    <label class="payment-option">
+
+                        <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="Transfer Bank"
+                        >
+
+                        <span class="payment-option-content">
+
+                            <span class="payment-icon">
+                                🏦
+                            </span>
+
+                            <span class="payment-info">
+
+                                <strong>
+                                    Transfer Bank
+                                </strong>
+
+                                <small>
+                                    Transfer ke rekening yang diberikan admin
+                                </small>
+
+                            </span>
+
+                            <span class="payment-check">
+                                ✓
+                            </span>
+
+                        </span>
+
+                    </label>
+
+                </div>
+
+
+                <!-- PAYMENT INFO -->
+
+                <div
+                    id="paymentInfo"
+                    class="payment-info-box"
+                >
+
+                    <strong>
+                        💵 COD / Bayar di Tempat
+                    </strong>
+
+                    <p>
+                        Pembayaran dilakukan setelah layanan
+                        diberikan atau sesuai kesepakatan
+                        dengan mitra.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- AGREEMENT -->
+
+            <div class="agreement-group">
+
+                <label class="checkbox-label">
+
+                    <input
+                        type="checkbox"
+                        id="customerAgreement"
+                        name="customerAgreement"
+                        required
+                    >
+
+                    <span>
+                        Saya menyetujui data pesanan digunakan
+                        untuk proses layanan JASA KAMPUNG.
+                    </span>
+
+                </label>
+
+            </div>
+
+
+            <!-- SUBMIT -->
+
+            <button
+                type="submit"
+                class="primary-button submit-button"
+            >
+                <span>📲</span>
+                Buat Pesanan
+            </button>
+
+
+            <p class="form-note">
+                Setelah pesanan dibuat, Anda akan diarahkan
+                ke WhatsApp untuk konfirmasi.
+            </p>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     ORDERS MODAL
+========================================================= -->
+
+<div
+    class="modal"
+    id="ordersModal"
+    hidden
+>
+
+    <div class="modal-overlay" data-close-modal></div>
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <div>
+                <span class="section-label">
+                    PESANAN
+                </span>
+
+                <h2>
+                    Pesanan Saya
+                </h2>
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                data-close-modal
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div id="ordersList">
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    🧾
+                </div>
+
+                <h3>
+                    Belum Ada Pesanan
+                </h3>
+
+                <p>
+                    Pesanan Anda akan muncul di sini.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     PROFILE MODAL
+========================================================= -->
+
+<div
+    class="modal"
+    id="profileModal"
+    hidden
+>
+
+    <div class="modal-overlay" data-close-modal></div>
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <div>
+                <span class="section-label">
+                    AKUN
+                </span>
+
+                <h2>
+                    Profil
+                </h2>
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                data-close-modal
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="profile-content">
+
+            <div class="profile-icon">
+                👤
+            </div>
+
+            <h3 id="profileName">
+                Pelanggan
+            </h3>
+
+            <p id="profilePhone">
+                -
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     NOTIFICATION MODAL
+========================================================= -->
+
+<div
+    class="modal"
+    id="notificationModal"
+    hidden
+>
+
+    <div class="modal-overlay" data-close-modal></div>
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <div>
+                <span class="section-label">
+                    INFORMASI
+                </span>
+
+                <h2>
+                    Notifikasi
+                </h2>
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                data-close-modal
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div id="notificationsList">
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    🔔
+                </div>
+
+                <h3>
+                    Belum Ada Notifikasi
+                </h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     TECHNICIAN / PARTNER MODAL
+========================================================= -->
+
+<div
+    class="modal"
+    id="technicianModal"
+    hidden
+>
+
+    <div class="modal-overlay" data-close-modal></div>
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <div>
+                <span class="section-label">
+                    MITRA
+                </span>
+
+                <h2>
+                    Daftar Jadi Mitra
+                </h2>
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                data-close-modal
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form id="partnerForm">
+
+            <div class="form-group">
+
+                <label for="partnerName">
+                    Nama
+                </label>
+
+                <input
+                    type="text"
+                    id="partnerName"
+                    placeholder="Nama lengkap"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="partnerPhone">
+                    Nomor WhatsApp
+                </label>
+
+                <input
+                    type="tel"
+                    id="partnerPhone"
+                    placeholder="081234567890"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="partnerService">
+                    Keahlian
+                </label>
+
+                <input
+                    type="text"
+                    id="partnerService"
+                    placeholder="Contoh: Teknisi AC"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="partnerAddress">
+                    Area Layanan
+                </label>
+
+                <textarea
+                    id="partnerAddress"
+                    rows="3"
+                    placeholder="Wilayah yang dapat Anda layani"
+                    required
+                ></textarea>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="primary-button"
+            >
+                Daftar Menjadi Mitra
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     TOAST
+========================================================= -->
+
+<div
+    id="toast"
+    class="toast"
+    role="status"
+    aria-live="polite"
+    hidden
+>
+
+    <span id="toastIcon">
+        ✓
+    </span>
+
+    <span id="toastMessage">
+        Berhasil
+    </span>
+
+</div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
+<script src="script.js"></script>
+
+</body>
+</html>
