@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="theme-color"
+        content="#ff6b00"
+    >
+
+    <title>Dashboard Admin — JASA KAMPUNG</title>
+
+    <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-brand">
+
+            <div class="brand-logo">
+                JK
+            </div>
+
+            <div>
+                <strong>JASA KAMPUNG</strong>
+                <small>Admin Panel</small>
+            </div>
+
+        </div>
+
+
+        <nav class="sidebar-menu">
+
+            <button
+                class="menu-item active"
+                data-section="dashboard"
+            >
+                <span>📊</span>
+                <span>Dashboard</span>
+            </button>
+
+            <button
+                class="menu-item"
+                data-section="orders"
+            >
+                <span>📦</span>
+                <span>Pesanan</span>
+                <b id="sidebarOrderBadge">0</b>
+            </button>
+
+            <button
+                class="menu-item"
+                data-section="services"
+            >
+                <span>🛠️</span>
+                <span>Layanan</span>
+            </button>
+
+            <button
+                class="menu-item"
+                data-section="customers"
+            >
+                <span>👥</span>
+                <span>Pelanggan</span>
+            </button>
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+            <a
+                href="index.html"
+                class="view-site"
+            >
+                🌐 Lihat Website
+            </a>
+
+            <button
+                id="logoutButton"
+                class="logout-button"
+            >
+                🚪 Keluar
+            </button>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         OVERLAY MOBILE
+    ====================================================== -->
+
+    <div
+        class="sidebar-overlay"
+        id="sidebarOverlay"
+    ></div>
+
+
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <main class="main">
+
+        <!-- HEADER -->
+
+        <header class="topbar">
+
+            <button
+                class="mobile-menu-button"
+                id="mobileMenuButton"
+                aria-label="Buka menu"
+            >
+                ☰
+            </button>
+
+
+            <div class="page-heading">
+
+                <h1 id="pageTitle">
+                    Dashboard
+                </h1>
+
+                <p id="pageSubtitle">
+                    Ringkasan JASA KAMPUNG hari ini
+                </p>
+
+            </div>
+
+
+            <div class="admin-profile">
+
+                <div class="admin-avatar">
+                    A
+                </div>
+
+                <div class="admin-user-info">
+
+                    <strong id="adminName">
+                        Admin
+                    </strong>
+
+                    <small id="adminEmail">
+                        -
+                    </small>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- =================================================
+             GLOBAL MESSAGE
+        ================================================== -->
+
+        <div
+            id="adminMessage"
+            class="admin-message"
+        ></div>
+
+
+        <!-- =================================================
+             DASHBOARD SECTION
+        ================================================== -->
+
+        <section
+            id="section-dashboard"
+            class="admin-section active"
+        >
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Ringkasan</h2>
+                    <p>
+                        Pantau aktivitas JASA KAMPUNG.
+                    </p>
+                </div>
+
+                <button
+                    class="refresh-button"
+                    id="refreshDashboard"
+                >
+                    🔄 Refresh
+                </button>
+
+            </div>
+
+
+            <!-- STAT CARDS -->
+
+            <div class="stats-grid">
+
+                <article class="stat-card">
+
+                    <div class="stat-icon orange">
+                        📦
+                    </div>
+
+                    <div>
+                        <span>Total Pesanan</span>
+                        <strong id="statTotalOrders">
+                            0
+                        </strong>
+                    </div>
+
+                </article>
+
+
+                <article class="stat-card">
+
+                    <div class="stat-icon yellow">
+                        ⏳
+                    </div>
+
+                    <div>
+                        <span>Menunggu</span>
+                        <strong id="statPendingOrders">
+                            0
+                        </strong>
+                    </div>
+
+                </article>
+
+
+                <article class="stat-card">
+
+                    <div class="stat-icon blue">
+                        🔧
+                    </div>
+
+                    <div>
+                        <span>Diproses</span>
+                        <strong id="statProcessingOrders">
+                            0
+                        </strong>
+                    </div>
+
+                </article>
+
+
+                <article class="stat-card">
+
+                    <div class="stat-icon green">
+                        ✅
+                    </div>
+
+                    <div>
+                        <span>Selesai</span>
+                        <strong id="statCompletedOrders">
+                            0
+                        </strong>
+                    </div>
+
+                </article>
+
+
+                <article class="stat-card">
+
+                    <div class="stat-icon red">
+                        ❌
+                    </div>
+
+                    <div>
+                        <span>Dibatalkan</span>
+                        <strong id="statCancelledOrders">
+                            0
+                        </strong>
+                    </div>
+
+                </article>
+
+
+                <article class="stat-card">
+
+                    <div class="stat-icon purple">
+                        💰
+                    </div>
+
+                    <div>
+                        <span>Pendapatan Selesai</span>
+                        <strong id="statRevenue">
+                            Rp0
+                        </strong>
+                    </div>
+
+                </article>
+
+            </div>
+
+
+            <!-- PAYMENT SUMMARY -->
+
+            <div class="dashboard-grid">
+
+                <div class="panel">
+
+                    <div class="panel-header">
+
+                        <div>
+                            <h3>
+                                Status Pembayaran
+                            </h3>
+
+                            <p>
+                                Ringkasan pembayaran pelanggan
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="payment-summary">
+
+                        <div class="payment-summary-item">
+                            <span>Belum Dibayar</span>
+                            <strong id="paymentUnpaid">
+                                0
+                            </strong>
+                        </div>
+
+                        <div class="payment-summary-item">
+                            <span>Menunggu Verifikasi</span>
+                            <strong id="paymentWaiting">
+                                0
+                            </strong>
+                        </div>
+
+                        <div class="payment-summary-item">
+                            <span>Lunas</span>
+                            <strong id="paymentPaid">
+                                0
+                            </strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- LATEST ORDERS -->
+
+                <div class="panel">
+
+                    <div class="panel-header">
+
+                        <div>
+                            <h3>
+                                Pesanan Terbaru
+                            </h3>
+
+                            <p>
+                                Pesanan yang baru masuk
+                            </p>
+                        </div>
+
+                        <button
+                            class="text-button"
+                            data-section="orders"
+                        >
+                            Lihat Semua
+                        </button>
+
+                    </div>
+
+                    <div
+                        id="latestOrders"
+                        class="latest-orders"
+                    >
+
+                        <div class="loading-state">
+                            Memuat pesanan...
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             ORDERS SECTION
+        ================================================== -->
+
+        <section
+            id="section-orders"
+            class="admin-section"
+        >
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Pesanan</h2>
+                    <p>
+                        Kelola pesanan pelanggan.
+                    </p>
+                </div>
+
+                <button
+                    class="refresh-button"
+                    id="refreshOrders"
+                >
+                    🔄 Refresh
+                </button>
+
+            </div>
+
+
+            <!-- ORDER FILTER -->
+
+            <div class="filter-panel">
+
+                <div class="search-box">
+
+                    <span>🔎</span>
+
+                    <input
+                        type="search"
+                        id="orderSearch"
+                        placeholder="Cari kode, nama, atau nomor HP..."
+                    >
+
+                </div>
+
+
+                <select id="orderStatusFilter">
+
+                    <option value="Semua">
+                        Semua Status
+                    </option>
+
+                    <option value="Menunggu">
+                        Menunggu
+                    </option>
+
+                    <option value="Diproses">
+                        Diproses
+                    </option>
+
+                    <option value="Selesai">
+                        Selesai
+                    </option>
+
+                    <option value="Dibatalkan">
+                        Dibatalkan
+                    </option>
+
+                </select>
+
+
+                <select id="paymentStatusFilter">
+
+                    <option value="Semua">
+                        Semua Pembayaran
+                    </option>
+
+                    <option value="Belum Dibayar">
+                        Belum Dibayar
+                    </option>
+
+                    <option value="Menunggu Verifikasi">
+                        Menunggu Verifikasi
+                    </option>
+
+                    <option value="Lunas">
+                        Lunas
+                    </option>
+
+                    <option value="Dibatalkan">
+                        Dibatalkan
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- ORDER LIST -->
+
+            <div
+                id="ordersList"
+                class="orders-list"
+            >
+
+                <div class="loading-state">
+                    Memuat pesanan...
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             SERVICES SECTION
+        ================================================== -->
+
+        <section
+            id="section-services"
+            class="admin-section"
+        >
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Layanan</h2>
+
+                    <p>
+                        Atur harga dan status layanan.
+                    </p>
+                </div>
+
+                <button
+                    class="refresh-button"
+                    id="refreshServices"
+                >
+                    🔄 Refresh
+                </button>
+
+            </div>
+
+
+            <div
+                id="servicesList"
+                class="services-admin-grid"
+            >
+
+                <div class="loading-state">
+                    Memuat layanan...
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             CUSTOMERS SECTION
+        ================================================== -->
+
+        <section
+            id="section-customers"
+            class="admin-section"
+        >
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Pelanggan</h2>
+
+                    <p>
+                        Data pelanggan JASA KAMPUNG.
+                    </p>
+                </div>
+
+                <button
+                    class="refresh-button"
+                    id="refreshCustomers"
+                >
+                    🔄 Refresh
+                </button>
+
+            </div>
+
+
+            <div class="filter-panel">
+
+                <div class="search-box">
+
+                    <span>🔎</span>
+
+                    <input
+                        type="search"
+                        id="customerSearch"
+                        placeholder="Cari nama atau nomor HP..."
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="customersList"
+                class="customers-list"
+            >
+
+                <div class="loading-state">
+                    Memuat pelanggan...
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =====================================================
+         ORDER DETAIL MODAL
+    ====================================================== -->
+
+    <div
+        class="modal"
+        id="orderDetailModal"
+        aria-hidden="true"
+    >
+
+        <div class="modal-overlay"></div>
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <span class="modal-label">
+                        DETAIL PESANAN
+                    </span>
+
+                    <h2 id="detailOrderCode">
+                        -
+                    </h2>
+
+                </div>
+
+                <button
+                    class="modal-close"
+                    data-close-modal="orderDetailModal"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <!-- STATUS -->
+
+                <div class="detail-status-row">
+
+                    <div>
+
+                        <small>
+                            Status Pesanan
+                        </small>
+
+                        <select
+                            id="detailOrderStatus"
+                        >
+
+                            <option value="Menunggu">
+                                Menunggu
+                            </option>
+
+                            <option value="Diproses">
+                                Diproses
+                            </option>
+
+                            <option value="Selesai">
+                                Selesai
+                            </option>
+
+                            <option value="Dibatalkan">
+                                Dibatalkan
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div>
+
+                        <small>
+                            Status Pembayaran
+                        </small>
+
+                        <select
+                            id="detailPaymentStatus"
+                        >
+
+                            <option value="Belum Dibayar">
+                                Belum Dibayar
+                            </option>
+
+                            <option value="Menunggu Verifikasi">
+                                Menunggu Verifikasi
+                            </option>
+
+                            <option value="Lunas">
+                                Lunas
+                            </option>
+
+                            <option value="Dibatalkan">
+                                Dibatalkan
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SERVICE -->
+
+                <div class="detail-card">
+
+                    <h3>Layanan</h3>
+
+                    <div class="detail-row">
+
+                        <span>Nama Layanan</span>
+
+                        <strong id="detailService">
+                            -
+                        </strong>
+
+                    </div>
+
+                    <div class="detail-row">
+
+                        <span>Harga</span>
+
+                        <strong id="detailPrice">
+                            Rp0
+                        </strong>
+
+                    </div>
+
+                    <div class="detail-row">
+
+                        <span>Metode Pembayaran</span>
+
+                        <strong id="detailPaymentMethod">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CUSTOMER -->
+
+                <div class="detail-card">
+
+                    <h3>Pelanggan</h3>
+
+                    <div class="detail-row">
+
+                        <span>Nama</span>
+
+                        <strong id="detailCustomerName">
+                            -
+                        </strong>
+
+                    </div>
+
+                    <div class="detail-row">
+
+                        <span>No. HP</span>
+
+                        <strong id="detailCustomerPhone">
+                            -
+                        </strong>
+
+                    </div>
+
+                    <div class="detail-row">
+
+                        <span>Alamat</span>
+
+                        <strong id="detailAddress">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- REQUEST -->
+
+                <div class="detail-card">
+
+                    <h3>Permintaan</h3>
+
+                    <p
+                        id="detailProblem"
+                        class="detail-description"
+                    >
+                        -
+                    </p>
+
+                    <div class="detail-row">
+
+                        <span>Jadwal</span>
+
+                        <strong id="detailSchedule">
+                            -
+                        </strong>
+
+                    </div>
+
+                    <div class="detail-row">
+
+                        <span>Foto</span>
+
+                        <strong id="detailPhoto">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button
+                    class="secondary-button"
+                    data-close-modal="orderDetailModal"
+                >
+                    Tutup
+                </button>
+
+                <button
+                    class="primary-button"
+                    id="saveOrderButton"
+                >
+                    💾 Simpan Perubahan
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SERVICE EDIT MODAL
+    ====================================================== -->
+
+    <div
+        class="modal"
+        id="serviceModal"
+        aria-hidden="true"
+    >
+
+        <div class="modal-overlay"></div>
+
+        <div class="modal-content small">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <span class="modal-label">
+                        LAYANAN
+                    </span>
+
+                    <h2 id="serviceModalTitle">
+                        Edit Layanan
+                    </h2>
+
+                </div>
+
+                <button
+                    class="modal-close"
+                    data-close-modal="serviceModal"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <input
+                    type="hidden"
+                    id="editServiceId"
+                >
+
+
+                <div class="form-group">
+
+                    <label>
+                        Nama Layanan
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editServiceName"
+                        readonly
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Kategori
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editServiceCategory"
+                        readonly
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="editServicePrice">
+                        Harga
+                    </label>
+
+                    <div class="price-input">
+
+                        <span>Rp</span>
+
+                        <input
+                            type="number"
+                            id="editServicePrice"
+                            min="0"
+                            step="1000"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <label class="switch-row">
+
+                    <span>
+
+                        <strong>
+                            Layanan Aktif
+                        </strong>
+
+                        <small>
+                            Tampilkan layanan di website.
+                        </small>
+
+                    </span>
+
+                    <input
+                        type="checkbox"
+                        id="editServiceActive"
+                    >
+
+                    <span class="switch"></span>
+
+                </label>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button
+                    class="secondary-button"
+                    data-close-modal="serviceModal"
+                >
+                    Batal
+                </button>
+
+                <button
+                    class="primary-button"
+                    id="saveServiceButton"
+                >
+                    💾 Simpan
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         TOAST
+    ====================================================== -->
+
+    <div
+        id="adminToast"
+        class="admin-toast"
+    >
+
+        <span id="adminToastIcon">
+            ✓
+        </span>
+
+        <span id="adminToastMessage">
+            Berhasil
+        </span>
+
+    </div>
+
+
+    <!-- =====================================================
+         SUPABASE
+    ====================================================== -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="supabase.js"></script>
+
+
+    <!-- =====================================================
+         ADMIN JAVASCRIPT
+    ====================================================== -->
+
+    <script src="admin.js"></script>
+
+</body>
+</html>
