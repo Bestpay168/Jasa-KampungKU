@@ -1,6 +1,4 @@
-// =========================================================
-// JASA KAMPUNG — SUPABASE CONFIG
-// =========================================================
+
 
 const SUPABASE_URL =
     "https://egnzntmwzuowoueitqki.supabase.co";
@@ -15,5 +13,5 @@ const supabaseClient =
         SUPABASE_KEY
     );
 
-// Agar bisa digunakan oleh script.js dan admin.js
+
 window.JasaKampungSupabase = supabaseClient;
