@@ -1,41 +1,20 @@
 /* =========================================================
    JASA KAMPUNG
-   SCRIPT.JS
-   Supabase + Booking + Payment + WhatsApp
+   script.js
+   No Supabase
+   LocalStorage + WhatsApp
 ========================================================= */
 
 "use strict";
 
+
 /* =========================================================
-   CONFIG
+   1. CONFIGURATION
 ========================================================= */
 
 const WHATSAPP_NUMBER = "6289614001997";
+
 const APP_NAME = "JASA KAMPUNG";
-
-/*
-    Supabase client dibuat di supabase.js
-
-    Contoh supabase.js:
-
-    const SUPABASE_URL = "https://xxxxx.supabase.co";
-    const SUPABASE_KEY = "publishable-key-anda";
-
-    const supabaseClient =
-        window.supabase.createClient(
-            SUPABASE_URL,
-            SUPABASE_KEY
-        );
-
-    window.JasaKampungSupabase = supabaseClient;
-*/
-
-const supabaseClient = window.JasaKampungSupabase;
-
-
-/* =========================================================
-   LOCAL STORAGE
-========================================================= */
 
 const STORAGE_CUSTOMER =
     "jasa_kampung_customer";
@@ -48,527 +27,174 @@ const STORAGE_NOTIFICATIONS =
 
 
 /* =========================================================
-   STATE
+   2. STATE
 ========================================================= */
 
 let selectedService = null;
+
 let currentCategory = "Semua";
+
 let currentCustomer = {
     name: "",
     phone: ""
 };
 
-let allServices = [];
 let toastTimer = null;
 
 
 /* =========================================================
-   DOM READY
+   3. DOM READY
 ========================================================= */
 
-document.addEventListener(
-    "DOMContentLoaded",
-    initializeApp
-);
+document.addEventListener("DOMContentLoaded", () => {
+
+    initializeApp();
+
+});
 
 
 /* =========================================================
-   INITIALIZE
+   4. INITIALIZE APP
 ========================================================= */
 
-async function initializeApp() {
+function initializeApp() {
+
+
+
+    loadCustomer();
+
+    setupSearch();
+
+    setupCategories();
+
+    setupBookingButtons();
+
+    setupBookingForm();
+
+    setupPhotoPreview();
+
+    setupModalControls();
+
+    setupBottomNavigation();
+
+    setupFooterButtons();
+
+    setupProfile();
+
+    setupPartnerForm();
+
+    setupNotifications();
+
+    setupShowAllServices();
+
+    setMinimumDate();
+
+    updateYear();
+
+    renderOrders();
+
+    renderNotifications();
+
+    updateNotificationBadge();
+
+}
+
+
+
+
+/* =========================================================
+   6. CUSTOMER
+========================================================= */
+
+function loadCustomer() {
 
     try {
 
-        loadCustomer();
+        const saved =
+            localStorage.getItem(
+                STORAGE_CUSTOMER
+            );
 
-        setupSearch();
+        if (!saved) return;
 
-        setupCategories();
+        currentCustomer =
+            JSON.parse(saved);
 
-        setupBookingButtons();
+        const name =
+            document.getElementById(
+                "customerName"
+            );
 
-        setupBookingForm();
+        const phone =
+            document.getElementById(
+                "customerPhone"
+            );
 
-        setupPhotoPreview();
+        const profileName =
+            document.getElementById(
+                "profileName"
+            );
 
-        setupModalControls();
+        const profilePhone =
+            document.getElementById(
+                "profilePhone"
+            );
 
-        setupBottomNavigation();
+        if (name)
+            name.value =
+                currentCustomer.name || "";
 
-        setupFooterButtons();
+        if (phone)
+            phone.value =
+                currentCustomer.phone || "";
 
-        setupProfile();
+        if (profileName)
+            profileName.value =
+                currentCustomer.name || "";
 
-        setupPartnerForm();
-
-        setupNotifications();
-
-        setupShowAllServices();
-
-        setMinimumDate();
-
-        updateYear();
-
-        setupPaymentMethods();
-
-        /*
-            Ambil jasa dari Supabase.
-        */
-        await loadServices();
-
-        /*
-            Render pesanan lokal sementara.
-        */
-        renderOrders();
-
-        renderNotifications();
-
-        updateNotificationBadge();
+        if (profilePhone)
+            profilePhone.value =
+                currentCustomer.phone || "";
 
     } catch (error) {
 
         console.error(
-            "Gagal initialize app:",
+            "Gagal memuat profil:",
             error
         );
 
-        showToast(
-            "error",
-            "Aplikasi gagal dimuat."
-        );
-    }
-}
-
-
-/* =========================================================
-   SUPABASE CHECK
-========================================================= */
-
-function isSupabaseReady() {
-
-    return (
-        supabaseClient &&
-        typeof supabaseClient.from === "function"
-    );
-}
-
-
-/* =========================================================
-   LOAD SERVICES
-========================================================= */
-
-async function loadServices() {
-
-    /*
-        Jika Supabase belum dikonfigurasi,
-        gunakan fallback agar website tetap tampil.
-    */
-
-    if (!isSupabaseReady()) {
-
-        console.warn(
-            "Supabase belum dikonfigurasi."
-        );
-
-        allServices =
-            getFallbackServices();
-
-        renderServices();
-
-        return;
     }
 
-
-    const {
-        data,
-        error
-    } = await supabaseClient
-        .from("services")
-        .select("*")
-        .eq("active", true)
-        .order("category")
-        .order("name");
-
-
-    if (error) {
-
-        console.error(
-            "Supabase services error:",
-            error
-        );
-
-        /*
-            Fallback agar halaman tidak kosong.
-        */
-
-        allServices =
-            getFallbackServices();
-
-        renderServices();
-
-        return;
-    }
-
-
-    allServices = data || [];
-
-    renderServices();
 }
 
 
-/* =========================================================
-   FALLBACK SERVICES
-========================================================= */
+function saveCustomer(
+    name,
+    phone
+) {
 
-function getFallbackServices() {
-
-    return [
-
-        {
-            id: null,
-            name: "Setrika",
-            category: "Rumah",
-            price: 5000,
-            description: "Jasa setrika pakaian per kilogram",
-            active: true
-        },
-
-        {
-            id: null,
-            name: "Bersih Rumah",
-            category: "Rumah",
-            price: 50000,
-            description: "Jasa membersihkan rumah",
-            active: true
-        },
-
-        {
-            id: null,
-            name: "Cuci Sepatu",
-            category: "Rumah",
-            price: 25000,
-            description: "Jasa cuci dan perawatan sepatu",
-            active: true
-        },
-
-        {
-            id: null,
-            name: "Cuci Helm",
-            category: "Rumah",
-            price: 20000,
-            description: "Jasa cuci helm",
-            active: true
-        },
-
-        {
-            id: null,
-            name: "Perbaikan Listrik",
-            category: "Teknik",
-            price: 50000,
-            description: "Perbaikan instalasi listrik",
-            active: true
-        },
-
-        {
-            id: null,
-            name: "Service AC",
-            category: "Teknik",
-            price: 75000,
-            description: "Service dan pengecekan AC",
-            active: true
-        },
-
-        {
-            id: null,
-            name: "Service Pompa Air",
-            category: "Teknik",
-            price: 50000,
-            description: "Perbaikan pompa air",
-            active: true
-        },
-
-        {
-            id: null,
-            name: "Plumbing",
-            category: "Teknik",
-            price: 50000,
-            description: "Perbaikan saluran air",
-            active: true
-        },
-
-        {
-            id: null,
-            name: "Perbaikan Rumah",
-            category: "Teknik",
-            price: 75000,
-            description: "Perbaikan rumah ringan",
-            active: true
-        },
-
-        {
-            id: null,
-            name: "Antar Jemput Anak Sekolah",
-            category: "Antar Jemput",
-            price: 15000,
-            description: "Jasa antar jemput anak sekolah",
-            active: true
-        },
-
-        {
-            id: null,
-            name: "Antar Barang",
-            category: "Antar Jemput",
-            price: 10000,
-            description: "Jasa pengantaran barang",
-            active: true
-        },
-
-        {
-            id: null,
-            name: "Belanja Titipan",
-            category: "Antar Jemput",
-            price: 15000,
-            description: "Jasa belanja titipan",
-            active: true
-        },
-
-        {
-            id: null,
-            name: "Menjaga Orang Sakit",
-            category: "Pendamping",
-            price: 100000,
-            description: "Pendampingan orang sakit",
-            active: true
-        },
-
-        {
-            id: null,
-            name: "Pendamping Lansia",
-            category: "Pendamping",
-            price: 100000,
-            description: "Pendampingan lansia",
-            active: true
-        },
-
-        {
-            id: null,
-            name: "Temani ke Rumah Sakit",
-            category: "Pendamping",
-            price: 75000,
-            description: "Pendamping perjalanan ke rumah sakit",
-            active: true
-        },
-
-        {
-            id: null,
-            name: "Antri Rumah Sakit",
-            category: "Antrian",
-            price: 50000,
-            description: "Jasa antre rumah sakit",
-            active: true
-        },
-
-        {
-            id: null,
-            name: "Antri Administrasi",
-            category: "Antrian",
-            price: 30000,
-            description: "Jasa antre administrasi",
-            active: true
-        },
-
-        {
-            id: null,
-            name: "Antri Pengurusan Dokumen",
-            category: "Antrian",
-            price: 50000,
-            description: "Jasa antre pengurusan dokumen",
-            active: true
-        }
-
-    ];
-}
-
-
-/* =========================================================
-   SERVICE ICON
-========================================================= */
-
-function getServiceIcon(category) {
-
-    const icons = {
-
-        "Rumah": "🧹",
-
-        "Teknik": "🔧",
-
-        "Antar Jemput": "🚗",
-
-        "Pendamping": "🤝",
-
-        "Antrian": "🎫"
-
+    currentCustomer = {
+        name: name.trim(),
+        phone: phone.trim()
     };
 
-    return icons[category] || "🛠️";
-}
-
-
-/* =========================================================
-   RENDER SERVICES
-========================================================= */
-
-function renderServices() {
-
-    const serviceList =
-        document.getElementById(
-            "serviceList"
-        );
-
-    if (!serviceList) return;
-
-
-    serviceList.innerHTML = "";
-
-
-    const keyword =
-        (
-            document.getElementById(
-                "serviceSearch"
-            )?.value || ""
+    localStorage.setItem(
+        STORAGE_CUSTOMER,
+        JSON.stringify(
+            currentCustomer
         )
-        .trim()
-        .toLowerCase();
-
-
-    let services =
-        allServices.filter(service => {
-
-            const matchCategory =
-                currentCategory === "Semua" ||
-                service.category === currentCategory;
-
-            const matchSearch =
-                !keyword ||
-                service.name
-                    .toLowerCase()
-                    .includes(keyword) ||
-                (service.description || "")
-                    .toLowerCase()
-                    .includes(keyword);
-
-            return (
-                matchCategory &&
-                matchSearch
-            );
-        });
-
-
-    const emptyState =
-        document.getElementById(
-            "serviceEmptyState"
-        );
-
-
-    if (!services.length) {
-
-        if (emptyState) {
-            emptyState.hidden = false;
-        }
-
-        return;
-    }
-
-
-    if (emptyState) {
-        emptyState.hidden = true;
-    }
-
-
-    services.forEach(service => {
-
-        const card =
-            document.createElement("article");
-
-        card.className =
-            "service-card";
-
-
-        card.dataset.category =
-            service.category;
-
-        card.dataset.name =
-            service.name;
-
-
-        card.innerHTML = `
-
-            <div class="service-icon">
-                ${getServiceIcon(service.category)}
-            </div>
-
-            <div class="service-content">
-
-                <span class="service-category">
-                    ${escapeHTML(service.category)}
-                </span>
-
-                <h3>
-                    ${escapeHTML(service.name)}
-                </h3>
-
-                <p>
-                    ${escapeHTML(
-                        service.description ||
-                        "Layanan JASA KAMPUNG"
-                    )}
-                </p>
-
-                <div class="service-bottom">
-
-                    <strong class="service-price">
-                        ${formatRupiah(service.price)}
-                    </strong>
-
-                    <button
-                        type="button"
-                        class="book-button"
-                        data-book-service
-                        data-service-id="${service.id || ""}"
-                        data-service-name="${escapeAttribute(service.name)}"
-                        data-service-price="${service.price}"
-                    >
-                        Pesan
-                    </button>
-
-                </div>
-
-            </div>
-        `;
-
-
-        serviceList.appendChild(card);
-
-    });
-
-
-    /*
-        Event listener untuk tombol Pesan
-    */
-
-    setupBookingButtons();
+    );
 
 }
 
 
 /* =========================================================
-   SEARCH
+   7. SEARCH
 ========================================================= */
 
 function setupSearch() {
 
-    const search =
+    const input =
         document.getElementById(
             "serviceSearch"
         );
@@ -578,22 +204,27 @@ function setupSearch() {
             "clearSearch"
         );
 
+    if (!input) return;
 
-    if (!search) return;
 
-
-    search.addEventListener(
+    input.addEventListener(
         "input",
-        function () {
+        () => {
+
+            const keyword =
+                input.value.trim();
 
             if (clear) {
 
                 clear.hidden =
-                    !this.value.trim();
+                    keyword.length === 0;
 
             }
 
-            renderServices();
+            filterServices(
+                keyword,
+                currentCategory
+            );
 
         }
     );
@@ -603,15 +234,18 @@ function setupSearch() {
 
         clear.addEventListener(
             "click",
-            function () {
+            () => {
 
-                search.value = "";
+                input.value = "";
 
-                this.hidden = true;
+                clear.hidden = true;
 
-                renderServices();
+                filterServices(
+                    "",
+                    currentCategory
+                );
 
-                search.focus();
+                input.focus();
 
             }
         );
@@ -622,54 +256,142 @@ function setupSearch() {
 
 
 /* =========================================================
-   CATEGORIES
+   8. CATEGORY FILTER
 ========================================================= */
 
 function setupCategories() {
 
-    const buttons =
+    const categories =
         document.querySelectorAll(
             ".category-item"
         );
 
+    categories.forEach(
+        button => {
 
-    buttons.forEach(button => {
+            button.addEventListener(
+                "click",
+                () => {
 
-        button.addEventListener(
-            "click",
-            function () {
+                    categories.forEach(
+                        item =>
+                            item.classList.remove(
+                                "active"
+                            )
+                    );
 
-                buttons.forEach(item => {
-
-                    item.classList.remove(
+                    button.classList.add(
                         "active"
                     );
 
-                });
+                    currentCategory =
+                        button.dataset.category ||
+                        "Semua";
 
+                    const search =
+                        document.getElementById(
+                            "serviceSearch"
+                        );
 
-                this.classList.add(
-                    "active"
-                );
+                    filterServices(
+                        search
+                            ? search.value
+                            : "",
+                        currentCategory
+                    );
 
+                }
+            );
 
-                currentCategory =
-                    this.dataset.category ||
-                    "Semua";
-
-
-                renderServices();
-
-            }
-        );
-
-    });
+        }
+    );
 
 }
 
 
 /* =========================================================
-   BOOKING BUTTONS
+   FILTER SERVICES
+========================================================= */
+
+function filterServices(
+    keyword = "",
+    category = "Semua"
+) {
+
+    const cards =
+        document.querySelectorAll(
+            ".service-card"
+        );
+
+    const empty =
+        document.getElementById(
+            "serviceEmptyState"
+        );
+
+    let visibleCount = 0;
+
+    const normalizedKeyword =
+        keyword
+            .toLowerCase()
+            .trim();
+
+
+    cards.forEach(card => {
+
+        const name =
+            (
+                card.dataset.name ||
+                card.querySelector("h3")
+                    ?.textContent ||
+                ""
+            ).toLowerCase();
+
+        const cardCategory =
+            card.dataset.category ||
+            "";
+
+        const categoryMatch =
+            category === "Semua" ||
+            cardCategory === category;
+
+        const keywordMatch =
+            !normalizedKeyword ||
+            name.includes(
+                normalizedKeyword
+            ) ||
+            card.textContent
+                .toLowerCase()
+                .includes(
+                    normalizedKeyword
+                );
+
+        const visible =
+            categoryMatch &&
+            keywordMatch;
+
+        card.style.display =
+            visible
+                ? ""
+                : "none";
+
+        if (visible)
+            visibleCount++;
+
+    });
+
+
+    if (empty) {
+
+        empty.hidden =
+            visibleCount !== 0;
+
+    }
+
+}
+
+
+/* =========================================================
+   9. BOOKING BUTTONS
 ========================================================= */
 
 function setupBookingButtons() {
@@ -679,73 +401,54 @@ function setupBookingButtons() {
             "[data-book-service]"
         );
 
+    buttons.forEach(
+        button => {
 
-    buttons.forEach(button => {
+            button.addEventListener(
+                "click",
+                () => {
 
-        /*
-            Hindari listener ganda.
-        */
+                    const name =
+                        button.dataset
+                            .serviceName ||
+                        "Jasa";
 
-        if (button.dataset.bound === "true") {
-            return;
+                    const price =
+                        Number(
+                            button.dataset
+                                .servicePrice
+                        ) || 0;
+
+                    openBookingModal(
+                        name,
+                        price
+                    );
+
+                }
+            );
+
         }
-
-        button.dataset.bound = "true";
-
-
-        button.addEventListener(
-            "click",
-            function () {
-
-                const name =
-                    this.dataset.serviceName;
-
-                const price =
-                    Number(
-                        this.dataset.servicePrice
-                    ) || 0;
-
-                const serviceId =
-                    this.dataset.serviceId ||
-                    null;
-
-
-                openBookingModal(
-                    name,
-                    price,
-                    serviceId
-                );
-
-            }
-        );
-
-    });
+    );
 
 }
 
 
 /* =========================================================
-   OPEN BOOKING MODAL
+   OPEN BOOKING
 ========================================================= */
 
 function openBookingModal(
     name,
-    price,
-    serviceId = null
+    price
 ) {
 
     selectedService = {
-
-        id: serviceId,
-
-        name: name,
-
-        price: Number(price) || 0
-
+        name,
+        price
     };
 
 
-    const serviceName =
+    const service =
         document.getElementById(
             "selectedService"
         );
@@ -755,26 +458,36 @@ function openBookingModal(
             "selectedServicePrice"
         );
 
+    const serviceName =
+        document.getElementById(
+            "selectedServiceName"
+        );
 
-    if (serviceName) {
-
-        serviceName.textContent =
-            name;
-
-    }
+    const estimated =
+        document.getElementById(
+            "estimatedPrice"
+        );
 
 
-    if (servicePrice) {
+    if (service)
+        service.value = name;
 
-        servicePrice.textContent =
+    if (servicePrice)
+        servicePrice.value = price;
+
+    if (serviceName)
+        serviceName.textContent = name;
+
+    if (estimated)
+        estimated.textContent =
             formatRupiah(price);
 
-    }
 
+    showSpecialServiceInfo(name);
 
     loadCustomerIntoBooking();
 
-    resetPaymentSelection();
+    resetPhotoPreview();
 
     openModal("bookingModal");
 
@@ -789,28 +502,45 @@ function showSpecialServiceInfo(
     serviceName
 ) {
 
+    const box =
+        document.getElementById(
+            "specialServiceInfo"
+        );
+
+    const title =
+        document.getElementById(
+            "specialServiceTitle"
+        );
+
+    const description =
+        document.getElementById(
+            "specialServiceDescription"
+        );
+
+    if (!box) return;
+
+
+    let text = "";
+
     const name =
-        String(serviceName)
-            .toLowerCase();
+        serviceName.toLowerCase();
 
 
-    let message = "";
+    if (
+        name.includes("anak sekolah")
+    ) {
 
-
-    if (name.includes("anak sekolah")) {
-
-        message =
-            "Untuk antar jemput anak sekolah, pastikan alamat sekolah, jam antar/jemput dan kontak wali ditulis dengan jelas.";
+        text =
+            "Untuk keamanan, tuliskan nama anak, sekolah, alamat penjemputan, alamat tujuan, serta jadwal antar/jemput.";
 
     }
 
     else if (
-        name.includes("orang sakit") ||
-        name.includes("rumah sakit")
+        name.includes("orang sakit")
     ) {
 
-        message =
-            "Untuk layanan pendampingan, tuliskan kondisi dan kebutuhan pendampingan secara jelas.";
+        text =
+            "Layanan ini merupakan pendampingan non-medis. Tuliskan kondisi umum, kebutuhan pendampingan, dan kontak keluarga.";
 
     }
 
@@ -818,8 +548,17 @@ function showSpecialServiceInfo(
         name.includes("lansia")
     ) {
 
-        message =
-            "Mohon informasikan kebutuhan khusus lansia agar mitra dapat mempersiapkan layanan.";
+        text =
+            "Tuliskan kebutuhan lansia, aktivitas yang perlu dibantu, serta kontak keluarga yang dapat dihubungi.";
+
+    }
+
+    else if (
+        name.includes("rumah sakit")
+    ) {
+
+        text =
+            "Tuliskan jadwal, lokasi, kebutuhan pendampingan, dan kontak keluarga.";
 
     }
 
@@ -827,8 +566,8 @@ function showSpecialServiceInfo(
         name.includes("antri")
     ) {
 
-        message =
-            "Tuliskan lokasi, jenis antrean dan dokumen yang diperlukan.";
+        text =
+            "Tuliskan lokasi layanan, jenis antrian, tanggal, waktu mulai, serta dokumen yang perlu dibawa jika diperlukan.";
 
     }
 
@@ -836,8 +575,8 @@ function showSpecialServiceInfo(
         name.includes("antar barang")
     ) {
 
-        message =
-            "Tuliskan alamat pengambilan dan tujuan barang.";
+        text =
+            "Tuliskan lokasi pengambilan, tujuan, jenis barang, dan informasi tambahan.";
 
     }
 
@@ -845,81 +584,29 @@ function showSpecialServiceInfo(
         name.includes("belanja")
     ) {
 
-        message =
-            "Tuliskan daftar barang yang ingin dibelanjakan.";
+        text =
+            "Tuliskan daftar barang yang ingin dibeli dan lokasi toko jika sudah ditentukan.";
 
     }
 
 
-    if (message) {
+    if (text) {
 
-        showToast(
-            "info",
-            message
-        );
+        if (title)
+            title.textContent =
+                "Informasi tambahan";
 
-    }
+        if (description)
+            description.textContent =
+                text;
 
-}
+        box.hidden = false;
 
+    } else {
 
-/* =========================================================
-   LOAD CUSTOMER
-========================================================= */
-
-function loadCustomer() {
-
-    try {
-
-        const saved =
-            localStorage.getItem(
-                STORAGE_CUSTOMER
-            );
-
-
-        if (saved) {
-
-            currentCustomer =
-                JSON.parse(saved);
-
-        }
-
-    } catch (error) {
-
-        console.warn(
-            "Customer storage error:",
-            error
-        );
+        box.hidden = true;
 
     }
-
-}
-
-
-/* =========================================================
-   SAVE CUSTOMER
-========================================================= */
-
-function saveCustomer(
-    name,
-    phone
-) {
-
-    currentCustomer = {
-
-        name:
-            String(name || "").trim(),
-
-        phone:
-            String(phone || "").trim()
-
-    };
-
-
-    localStorage.setItem(
-        STORAGE_CUSTOMER,
-        JSON.stringify(currentCustomer)
-    );
 
 }
 
@@ -940,27 +627,20 @@ function loadCustomerIntoBooking() {
             "customerPhone"
         );
 
-
-    if (name && currentCustomer.name) {
-
-        name.value =
-            currentCustomer.name;
-
-    }
+    if (!name || !phone) return;
 
 
-    if (phone && currentCustomer.phone) {
+    name.value =
+        currentCustomer.name || "";
 
-        phone.value =
-            currentCustomer.phone;
-
-    }
+    phone.value =
+        currentCustomer.phone || "";
 
 }
 
 
 /* =========================================================
-   BOOKING FORM
+   10. BOOKING FORM
 ========================================================= */
 
 function setupBookingForm() {
@@ -970,17 +650,16 @@ function setupBookingForm() {
             "bookingForm"
         );
 
-
     if (!form) return;
 
 
     form.addEventListener(
         "submit",
-        async function (event) {
+        event => {
 
             event.preventDefault();
 
-            await processBooking();
+            processBooking();
 
         }
     );
@@ -989,185 +668,10 @@ function setupBookingForm() {
 
 
 /* =========================================================
-   PAYMENT METHODS
-========================================================= */
-
-function setupPaymentMethods() {
-
-    const radios =
-        document.querySelectorAll(
-            'input[name="paymentMethod"]'
-        );
-
-
-    const info =
-        document.getElementById(
-            "paymentInfo"
-        );
-
-
-    radios.forEach(radio => {
-
-        radio.addEventListener(
-            "change",
-            function () {
-
-                updatePaymentInfo(
-                    this.value
-                );
-
-            }
-        );
-
-    });
-
-
-    /*
-        Default
-    */
-
-    if (info) {
-
-        updatePaymentInfo("COD");
-
-    }
-
-}
-
-
-/* =========================================================
-   RESET PAYMENT
-========================================================= */
-
-function resetPaymentSelection() {
-
-    const radios =
-        document.querySelectorAll(
-            'input[name="paymentMethod"]'
-        );
-
-
-    radios.forEach(radio => {
-
-        radio.checked =
-            radio.value === "COD";
-
-    });
-
-
-    updatePaymentInfo("COD");
-
-}
-
-
-/* =========================================================
-   PAYMENT INFO
-========================================================= */
-
-function updatePaymentInfo(
-    method
-) {
-
-    const info =
-        document.getElementById(
-            "paymentInfo"
-        );
-
-
-    if (!info) return;
-
-
-    const messages = {
-
-        "COD": {
-
-            title:
-                "💵 COD / Bayar di Tempat",
-
-            text:
-                "Pembayaran dilakukan setelah layanan diberikan atau sesuai kesepakatan dengan mitra."
-
-        },
-
-        "QRIS": {
-
-            title:
-                "📱 QRIS",
-
-            text:
-                "Setelah pesanan dibuat, admin akan memberikan informasi QRIS untuk pembayaran."
-
-        },
-
-        "DANA": {
-
-            title:
-                "💙 DANA",
-
-            text:
-                "Admin akan memberikan nomor atau informasi akun DANA setelah pesanan dikonfirmasi."
-
-        },
-
-        "GoPay": {
-
-            title:
-                "🟢 GoPay",
-
-            text:
-                "Admin akan memberikan informasi pembayaran GoPay setelah pesanan dikonfirmasi."
-
-        },
-
-        "Transfer Bank": {
-
-            title:
-                "🏦 Transfer Bank",
-
-            text:
-                "Admin akan memberikan nomor rekening tujuan setelah pesanan dikonfirmasi."
-
-        }
-
-    };
-
-
-    const selected =
-        messages[method] ||
-        messages["COD"];
-
-
-    info.innerHTML = `
-
-        <strong>
-            ${selected.title}
-        </strong>
-
-        <p>
-            ${selected.text}
-        </p>
-
-    `;
-
-}
-
-
-/* =========================================================
    PROCESS BOOKING
 ========================================================= */
 
-async function processBooking() {
-
-    if (!selectedService) {
-
-        showToast(
-            "error",
-            "Silakan pilih jasa terlebih dahulu."
-        );
-
-        return;
-    }
-
+function processBooking() {
 
     const name =
         getValue("customerName");
@@ -1190,53 +694,43 @@ async function processBooking() {
         );
 
 
-    const payment =
-        document.querySelector(
-            'input[name="paymentMethod"]:checked'
-        );
-
-
-    const photo =
-        document.getElementById(
-            "problemPhoto"
-        );
-
-
-    /* =====================================================
-       VALIDATION
-    ===================================================== */
-
     if (!name) {
 
         showToast(
-            "error",
-            "Nama wajib diisi."
+            "Nama wajib diisi.",
+            "!"
         );
 
-        focusElement("customerName");
+        focusElement(
+            "customerName"
+        );
 
         return;
+
     }
 
 
     if (!isValidPhone(phone)) {
 
         showToast(
-            "error",
-            "Nomor WhatsApp tidak valid."
+            "Nomor WhatsApp tidak valid.",
+            "!"
         );
 
-        focusElement("customerPhone");
+        focusElement(
+            "customerPhone"
+        );
 
         return;
+
     }
 
 
     if (!problem) {
 
         showToast(
-            "error",
-            "Jelaskan kebutuhan atau keluhan Anda."
+            "Jelaskan kebutuhan Anda.",
+            "!"
         );
 
         focusElement(
@@ -1244,14 +738,15 @@ async function processBooking() {
         );
 
         return;
+
     }
 
 
     if (!address) {
 
         showToast(
-            "error",
-            "Alamat wajib diisi."
+            "Alamat wajib diisi.",
+            "!"
         );
 
         focusElement(
@@ -1259,14 +754,15 @@ async function processBooking() {
         );
 
         return;
+
     }
 
 
     if (!schedule) {
 
         showToast(
-            "error",
-            "Pilih jadwal layanan."
+            "Pilih tanggal dan waktu.",
+            "!"
         );
 
         focusElement(
@@ -1274,48 +770,55 @@ async function processBooking() {
         );
 
         return;
-    }
 
-
-    if (!payment) {
-
-        showToast(
-            "error",
-            "Pilih metode pembayaran."
-        );
-
-        return;
     }
 
 
     if (
-        agreement &&
+        new Date(schedule) <
+        new Date()
+    ) {
+
+        showToast(
+            "Tanggal dan waktu tidak boleh lewat.",
+            "!"
+        );
+
+        return;
+
+    }
+
+
+    if (
+        !agreement ||
         !agreement.checked
     ) {
 
         showToast(
-            "error",
-            "Anda harus menyetujui ketentuan."
+            "Mohon setujui informasi pesanan.",
+            "!"
         );
 
         return;
+
     }
 
 
-    if (!WHATSAPP_NUMBER) {
+    if (
+        WHATSAPP_NUMBER.includes(
+            "xxxxxxxxxx"
+        )
+    ) {
 
         showToast(
-            "error",
-            "Nomor WhatsApp belum dikonfigurasi."
+            "Nomor WhatsApp admin belum diatur.",
+            "!"
         );
 
         return;
+
     }
 
-
-    /* =====================================================
-       SAVE CUSTOMER
-    ===================================================== */
 
     saveCustomer(
         name,
@@ -1323,155 +826,44 @@ async function processBooking() {
     );
 
 
-    /* =====================================================
-       CREATE ORDER
-    ===================================================== */
-
-    const orderData = {
-
-        serviceId:
-            selectedService.id,
-
-        service:
-            selectedService.name,
-
-        price:
-            selectedService.price,
-
-        customerName:
-            name,
-
-        customerPhone:
-            phone,
-
-        problem:
-            problem,
-
-        address:
-            address,
-
-        schedule:
-            schedule,
-
-        photoName:
-            photo?.files?.[0]?.name || "",
-
-        paymentMethod:
-            payment.value,
-
-        paymentStatus:
-            payment.value === "COD"
-                ? "Belum Dibayar"
-                : "Belum Dibayar"
-
-    };
+    const order = createOrder({
+        name,
+        phone,
+        problem,
+        address,
+        schedule
+    });
 
 
-    try {
+    saveOrder(order);
 
-        showToast(
-            "info",
-            "Menyimpan pesanan..."
+    addNotification(
+        `Pesanan ${order.orderCode} berhasil dibuat.`
+    );
+
+    renderOrders();
+
+    renderNotifications();
+
+    updateNotificationBadge();
+
+    closeModal(
+        "bookingModal"
+    );
+
+    showToast(
+        "Pesanan berhasil dibuat.",
+        "✓"
+    );
+
+
+    setTimeout(() => {
+
+        sendOrderToWhatsApp(
+            order
         );
 
-
-        const order =
-            await createOrder(
-                orderData
-            );
-
-
-        if (!order) {
-
-            throw new Error(
-                "Pesanan gagal dibuat."
-            );
-
-        }
-
-
-        /*
-            Simpan cache lokal.
-        */
-
-        saveOrder(order);
-
-
-        /*
-            Buat notifikasi lokal.
-        */
-
-        addNotification({
-
-            orderId:
-                order.id,
-
-            title:
-                "Pesanan berhasil dibuat",
-
-            message:
-                `${order.orderCode} — ${order.service}`
-
-        });
-
-
-        renderOrders();
-
-        renderNotifications();
-
-        updateNotificationBadge();
-
-
-        /*
-            Tutup modal.
-        */
-
-        closeModal(
-            "bookingModal"
-        );
-
-
-        /*
-            Tampilkan berhasil.
-        */
-
-        showToast(
-            "success",
-            `Pesanan ${order.orderCode} berhasil dibuat.`
-        );
-
-
-        /*
-            WhatsApp.
-        */
-
-        setTimeout(
-            function () {
-
-                sendOrderToWhatsApp(
-                    order
-                );
-
-            },
-            700
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "Booking error:",
-            error
-        );
-
-
-        showToast(
-            "error",
-            error.message ||
-            "Pesanan gagal dibuat."
-        );
-
-    }
+    }, 500);
 
 }
 
@@ -1480,236 +872,57 @@ async function processBooking() {
    CREATE ORDER
 ========================================================= */
 
-async function createOrder(data) {
+function createOrder(data) {
+
+    const photo =
+        document.getElementById(
+            "problemPhoto"
+        );
+
 
     const orderCode =
         generateOrderCode();
 
 
-    /*
-        Jika Supabase belum aktif,
-        gunakan LocalStorage sebagai fallback.
-    */
-
-    if (!isSupabaseReady()) {
-
-        return {
-
-            id:
-                "local-" +
-                Date.now(),
-
-            orderCode:
-                orderCode,
-
-            serviceId:
-                data.serviceId,
-
-            service:
-                data.service,
-
-            price:
-                data.price,
-
-            customerName:
-                data.customerName,
-
-            customerPhone:
-                data.customerPhone,
-
-            problem:
-                data.problem,
-
-            address:
-                data.address,
-
-            schedule:
-                data.schedule,
-
-            photoName:
-                data.photoName,
-
-            paymentMethod:
-                data.paymentMethod,
-
-            paymentStatus:
-                data.paymentStatus,
-
-            status:
-                "Menunggu",
-
-            createdAt:
-                new Date().toISOString()
-
-        };
-
-    }
-
-
-    /*
-        Simpan pelanggan.
-    */
-
-    let customerId = null;
-
-
-    const {
-        data: customerData,
-        error: customerError
-    } = await supabaseClient
-        .from("customers")
-        .upsert(
-            {
-                name:
-                    data.customerName,
-
-                phone:
-                    data.customerPhone,
-
-                updated_at:
-                    new Date().toISOString()
-            },
-            {
-                onConflict:
-                    "phone"
-            }
-        )
-        .select("id")
-        .single();
-
-
-    if (
-        !customerError &&
-        customerData
-    ) {
-
-        customerId =
-            customerData.id;
-
-    }
-
-
-    /*
-        Buat order.
-    */
-
-    const {
-        data: orderData,
-        error: orderError
-    } = await supabaseClient
-        .from("orders")
-        .insert({
-
-            order_code:
-                orderCode,
-
-            service_id:
-                data.serviceId || null,
-
-            service_name:
-                data.service,
-
-            service_price:
-                Number(data.price) || 0,
-
-            customer_name:
-                data.customerName,
-
-            customer_phone:
-                data.customerPhone,
-
-            problem:
-                data.problem,
-
-            address:
-                data.address,
-
-            schedule:
-                data.schedule || null,
-
-            photo_name:
-                data.photoName || "",
-
-            payment_method:
-                data.paymentMethod,
-
-            payment_status:
-                data.paymentStatus,
-
-            status:
-                "Menunggu"
-
-        })
-        .select("*")
-        .single();
-
-
-    if (orderError) {
-
-        console.error(
-            "Order insert error:",
-            orderError
-        );
-
-        throw new Error(
-            orderError.message ||
-            "Gagal menyimpan pesanan."
-        );
-
-    }
-
-
-    /*
-        Format kembali supaya cocok
-        dengan sistem frontend.
-    */
-
     return {
 
         id:
-            orderData.id,
+            Date.now(),
 
-        orderCode:
-            orderData.order_code,
-
-        serviceId:
-            orderData.service_id,
+        orderCode,
 
         service:
-            orderData.service_name,
+            selectedService
+                ?.name || "Jasa",
 
         price:
-            orderData.service_price,
+            selectedService
+                ?.price || 0,
 
         customerName:
-            orderData.customer_name,
+            data.name,
 
         customerPhone:
-            orderData.customer_phone,
+            data.phone,
 
         problem:
-            orderData.problem,
+            data.problem,
 
         address:
-            orderData.address,
+            data.address,
 
         schedule:
-            orderData.schedule,
+            data.schedule,
 
         photoName:
-            orderData.photo_name,
-
-        paymentMethod:
-            orderData.payment_method,
-
-        paymentStatus:
-            orderData.payment_status,
+            photo?.files?.[0]
+                ?.name || "",
 
         status:
-            orderData.status,
+            "Menunggu",
 
         createdAt:
-            orderData.created_at
+            new Date().toISOString()
 
     };
 
@@ -1717,23 +930,65 @@ async function createOrder(data) {
 
 
 /* =========================================================
-   WHATSAPP
+   11. SAVE ORDER
+========================================================= */
+
+function getOrders() {
+
+    try {
+
+        const data =
+            localStorage.getItem(
+                STORAGE_ORDERS
+            );
+
+        return data
+            ? JSON.parse(data)
+            : [];
+
+    } catch (error) {
+
+        console.error(
+            "Gagal membaca pesanan:",
+            error
+        );
+
+        return [];
+
+    }
+
+}
+
+
+function saveOrder(order) {
+
+    const orders =
+        getOrders();
+
+    orders.unshift(order);
+
+    localStorage.setItem(
+        STORAGE_ORDERS,
+        JSON.stringify(orders)
+    );
+
+}
+
+
+/* =========================================================
+   12. WHATSAPP
 ========================================================= */
 
 function sendOrderToWhatsApp(
     order
 ) {
 
-    const message =
-        buildWhatsAppMessage(order);
-
+    const message = buildWhatsAppMessage(
+        order
+    );
 
     const url =
-        "https://wa.me/" +
-        WHATSAPP_NUMBER +
-        "?text=" +
-        encodeURIComponent(message);
-
+        `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 
     window.open(
         url,
@@ -1751,226 +1006,166 @@ function buildWhatsAppMessage(
     order
 ) {
 
-    return `*${APP_NAME}*
+    const photoText =
+        order.photoName
+            ? `\n📷 Foto: ${order.photoName}`
+            : "";
 
-*PESANAN BARU*
 
-Kode Pesanan:
+    return `
+*${APP_NAME} — PESANAN BARU*
+
+🧾 *Kode Pesanan*
 ${order.orderCode}
 
-Jasa:
+🛠️ *Jasa*
 ${order.service}
 
-Harga:
+💰 *Estimasi Mulai*
 ${formatRupiah(order.price)}
 
-Nama:
+👤 *Nama*
 ${order.customerName}
 
-WhatsApp:
+📱 *WhatsApp*
 ${order.customerPhone}
 
-Kebutuhan:
+📝 *Kebutuhan*
 ${order.problem}
 
-Alamat:
+📍 *Alamat*
 ${order.address}
 
-Jadwal:
+📅 *Jadwal*
 ${formatDateTime(order.schedule)}
+${photoText}
 
-Pembayaran:
-${order.paymentMethod}
-
-Status Pembayaran:
-${order.paymentStatus}
-
-Status Pesanan:
+📌 *Status*
 ${order.status}
 
 Mohon konfirmasi pesanan saya.
 
-Terima kasih.`;
+Terima kasih.
+`.trim();
 
 }
 
 
 /* =========================================================
-   GET LOCAL ORDERS
+   13. ORDER LIST
 ========================================================= */
 
-function getOrders() {
+function renderOrders() {
 
-    try {
-
-        const orders =
-            localStorage.getItem(
-                STORAGE_ORDERS
-            );
-
-
-        return orders
-            ? JSON.parse(orders)
-            : [];
-
-    } catch (error) {
-
-        console.error(
-            "Get orders error:",
-            error
+    const list =
+        document.getElementById(
+            "ordersList"
         );
 
-        return [];
+    const empty =
+        document.getElementById(
+            "emptyOrders"
+        );
 
-    }
+    if (!list) return;
 
-}
-
-
-/* =========================================================
-   SAVE LOCAL ORDER
-========================================================= */
-
-function saveOrder(order) {
 
     const orders =
         getOrders();
 
 
-    orders.unshift(order);
+    list.innerHTML = "";
 
 
-    /*
-        Simpan maksimal 50 pesanan lokal.
-    */
+    if (!orders.length) {
 
-    localStorage.setItem(
-        STORAGE_ORDERS,
-        JSON.stringify(
-            orders.slice(0, 50)
-        )
+        if (empty)
+            empty.hidden = false;
+
+        return;
+
+    }
+
+
+    if (empty)
+        empty.hidden = true;
+
+
+    orders.forEach(
+        order => {
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+            card.className =
+                "order-card";
+
+
+            card.innerHTML = `
+
+                <div class="order-card-top">
+
+                    <div>
+
+                        <h3>
+                            ${escapeHTML(
+                                order.service
+                            )}
+                        </h3>
+
+                        <div class="order-code">
+                            ${escapeHTML(
+                                order.orderCode
+                            )}
+                        </div>
+
+                    </div>
+
+                    <span class="order-status">
+                        ${escapeHTML(
+                            order.status
+                        )}
+                    </span>
+
+                </div>
+
+                <p>
+                    📅 ${escapeHTML(
+                        formatDateTime(
+                            order.schedule
+                        )
+                    )}
+                </p>
+
+                <p>
+                    📍 ${escapeHTML(
+                        order.address
+                    )}
+                </p>
+
+                <p>
+                    💰 ${formatRupiah(
+                        order.price
+                    )}
+                </p>
+
+            `;
+
+
+            list.appendChild(
+                card
+            );
+
+        }
     );
 
 }
 
 
 /* =========================================================
-   RENDER ORDERS
-========================================================= */
-
-function renderOrders() {
-
-    const container =
-        document.getElementById(
-            "ordersList"
-        );
-
-
-    if (!container) return;
-
-
-    const orders =
-        getOrders();
-
-
-    if (!orders.length) {
-
-        container.innerHTML = `
-
-            <div class="empty-state">
-
-                <div class="empty-icon">
-                    🧾
-                </div>
-
-                <h3>
-                    Belum Ada Pesanan
-                </h3>
-
-                <p>
-                    Pesanan Anda akan muncul di sini.
-                </p>
-
-            </div>
-
-        `;
-
-        return;
-    }
-
-
-    container.innerHTML =
-        orders.map(order => `
-
-            <div class="order-card">
-
-                <div class="order-header">
-
-                    <strong>
-                        ${escapeHTML(
-                            order.orderCode
-                        )}
-                    </strong>
-
-                    <span class="order-status">
-                        ${escapeHTML(
-                            order.status ||
-                            "Menunggu"
-                        )}
-                    </span>
-
-                </div>
-
-
-                <div class="order-body">
-
-                    <h3>
-                        ${escapeHTML(
-                            order.service
-                        )}
-                    </h3>
-
-                    <p>
-                        ${formatRupiah(
-                            order.price
-                        )}
-                    </p>
-
-                    <p>
-                        💳
-                        ${escapeHTML(
-                            order.paymentMethod ||
-                            "COD"
-                        )}
-                    </p>
-
-                    <p>
-                        Status pembayaran:
-                        <strong>
-                            ${escapeHTML(
-                                order.paymentStatus ||
-                                "Belum Dibayar"
-                            )}
-                        </strong>
-                    </p>
-
-                    <small>
-                        ${formatDateTime(
-                            order.createdAt
-                        )}
-                    </small>
-
-                </div>
-
-            </div>
-
-        `).join("");
-
-}
-
-
-/* =========================================================
-   PHOTO PREVIEW
+   14. PHOTO PREVIEW
 ========================================================= */
 
 function setupPhotoPreview() {
@@ -1985,26 +1180,32 @@ function setupPhotoPreview() {
             "photoPreview"
         );
 
+    const image =
+        document.getElementById(
+            "photoPreviewImage"
+        );
 
-    if (!input || !preview) return;
+
+    if (
+        !input ||
+        !preview ||
+        !image
+    ) return;
 
 
     input.addEventListener(
         "change",
-        function () {
-
-            preview.innerHTML = "";
-
+        () => {
 
             const file =
-                this.files?.[0];
-
+                input.files?.[0];
 
             if (!file) {
 
-                preview.hidden = true;
+                resetPhotoPreview();
 
                 return;
+
             }
 
 
@@ -2014,16 +1215,17 @@ function setupPhotoPreview() {
                 )
             ) {
 
-                preview.hidden = true;
-
                 showToast(
-                    "error",
-                    "File harus berupa gambar."
+                    "File harus berupa gambar.",
+                    "!"
                 );
 
-                this.value = "";
+                input.value = "";
+
+                resetPhotoPreview();
 
                 return;
+
             }
 
 
@@ -2032,33 +1234,26 @@ function setupPhotoPreview() {
 
 
             reader.onload =
-                function (event) {
+                event => {
 
-                    preview.innerHTML = `
+                    image.src =
+                        event.target.result;
 
-                        <img
-                            src="${event.target.result}"
-                            alt="Preview foto masalah"
-                        >
-
-                    `;
-
-                    preview.hidden = false;
+                    preview.hidden =
+                        false;
 
                 };
 
 
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(
+                file
+            );
 
         }
     );
 
 }
 
-
-/* =========================================================
-   RESET PHOTO
-========================================================= */
 
 function resetPhotoPreview() {
 
@@ -2072,160 +1267,136 @@ function resetPhotoPreview() {
             "photoPreview"
         );
 
+    const image =
+        document.getElementById(
+            "photoPreviewImage"
+        );
 
-    if (input) {
 
+    if (input)
         input.value = "";
 
-    }
-
-
-    if (preview) {
-
-        preview.innerHTML = "";
-
+    if (preview)
         preview.hidden = true;
 
-    }
+    if (image)
+        image.src = "";
 
 }
 
 
 /* =========================================================
-   MODALS
+   15. MODALS
 ========================================================= */
 
 function setupModalControls() {
 
-    document.addEventListener(
-        "click",
-        function (event) {
+    document.querySelectorAll(
+        "[data-close-modal]"
+    ).forEach(
+        element => {
 
-            const closeButton =
-                event.target.closest(
-                    "[data-close-modal]"
-                );
+            element.addEventListener(
+                "click",
+                () => {
 
+                    const modal =
+                        element.closest(
+                            ".modal"
+                        );
 
-            if (
-                closeButton
-            ) {
-
-                const modal =
-                    closeButton.closest(
-                        ".modal"
-                    );
-
-
-                if (modal) {
+                    if (!modal) return;
 
                     closeModal(
                         modal.id
                     );
 
                 }
-
-            }
+            );
 
         }
     );
 
 
-    /*
-        Escape
-    */
-
     document.addEventListener(
         "keydown",
-        function (event) {
+        event => {
 
             if (
-                event.key === "Escape"
-            ) {
+                event.key !== "Escape"
+            ) return;
 
-                document
-                    .querySelectorAll(
-                        ".modal:not([hidden])"
-                    )
-                    .forEach(modal => {
+
+            document
+                .querySelectorAll(
+                    ".modal.active"
+                )
+                .forEach(
+                    modal => {
 
                         closeModal(
                             modal.id
                         );
 
-                    });
-
-            }
+                    }
+                );
 
         }
     );
 
 }
 
-
-/* =========================================================
-   OPEN MODAL
-========================================================= */
 
 function openModal(id) {
 
     const modal =
         document.getElementById(id);
 
-
     if (!modal) return;
 
 
-    modal.hidden = false;
-
-    document.body.classList.add(
-        "modal-open"
+    modal.classList.add(
+        "active"
     );
+
+    modal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+
+    document.body.style.overflow =
+        "hidden";
 
 }
 
-
-/* =========================================================
-   CLOSE MODAL
-========================================================= */
 
 function closeModal(id) {
 
     const modal =
         document.getElementById(id);
 
-
     if (!modal) return;
 
 
-    modal.hidden = true;
+    modal.classList.remove(
+        "active"
+    );
 
-
-    /*
-        Jika semua modal tertutup,
-        buka scroll kembali.
-    */
-
-    const openModalExists =
-        document.querySelector(
-            ".modal:not([hidden])"
-        );
-
-
-    if (!openModalExists) {
-
-        document.body.classList.remove(
-            "modal-open"
-        );
-
-    }
+    modal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
 
 
     if (
-        id === "bookingModal"
+        !document.querySelector(
+            ".modal.active"
+        )
     ) {
 
-        resetPhotoPreview();
+        document.body.style.overflow =
+            "";
 
     }
 
@@ -2233,7 +1404,7 @@ function closeModal(id) {
 
 
 /* =========================================================
-   BOTTOM NAVIGATION
+   16. BOTTOM NAV
 ========================================================= */
 
 function setupBottomNavigation() {
@@ -2244,76 +1415,74 @@ function setupBottomNavigation() {
         );
 
 
-    buttons.forEach(button => {
+    buttons.forEach(
+        button => {
 
-        button.addEventListener(
-            "click",
-            function () {
+            button.addEventListener(
+                "click",
+                () => {
 
-                const nav =
-                    this.dataset.nav;
+                    const target =
+                        button.dataset.nav;
 
 
-                buttons.forEach(item => {
+                    buttons.forEach(
+                        item =>
+                            item.classList.remove(
+                                "active"
+                            )
+                    );
 
-                    item.classList.remove(
+                    button.classList.add(
                         "active"
                     );
 
-                });
 
+                    if (
+                        target === "home"
+                    ) {
 
-                this.classList.add(
-                    "active"
-                );
+                        scrollToSection(
+                            "home"
+                        );
 
+                    }
 
-                if (nav === "home") {
+                    else if (
+                        target === "services"
+                    ) {
 
-                    scrollToSection(
-                        "home"
-                    );
+                        scrollToSection(
+                            "services"
+                        );
 
-                }
+                    }
 
-                else if (
-                    nav === "services"
-                ) {
+                    else if (
+                        target === "orders"
+                    ) {
 
-                    scrollToSection(
-                        "services"
-                    );
+                        openModal(
+                            "ordersModal"
+                        );
 
-                }
+                    }
 
-                else if (
-                    nav === "orders"
-                ) {
+                    else if (
+                        target === "profile"
+                    ) {
 
-                    renderOrders();
+                        openModal(
+                            "profileModal"
+                        );
 
-                    openModal(
-                        "ordersModal"
-                    );
-
-                }
-
-                else if (
-                    nav === "profile"
-                ) {
-
-                    setupProfileData();
-
-                    openModal(
-                        "profileModal"
-                    );
+                    }
 
                 }
+            );
 
-            }
-        );
-
-    });
+        }
+    );
 
 }
 
@@ -2322,89 +1491,45 @@ function setupBottomNavigation() {
    SCROLL
 ========================================================= */
 
-function scrollToSection(id) {
+function scrollToSection(
+    id
+) {
 
     const element =
         document.getElementById(id);
 
-
     if (!element) return;
 
-
     element.scrollIntoView({
-
         behavior: "smooth",
-
         block: "start"
-
     });
 
 }
 
 
 /* =========================================================
-   FOOTER
+   17. FOOTER BUTTONS
 ========================================================= */
 
 function setupFooterButtons() {
 
-    const categoryButtons =
-        document.querySelectorAll(
-            "[data-footer-category]"
-        );
-
-
-    categoryButtons.forEach(button => {
-
-        button.addEventListener(
-            "click",
-            function () {
-
-                currentCategory =
-                    this.dataset.footerCategory ||
-                    "Semua";
-
-
-                document
-                    .querySelectorAll(
-                        ".category-item"
-                    )
-                    .forEach(item => {
-
-                        item.classList.toggle(
-                            "active",
-                            item.dataset.category ===
-                            currentCategory
-                        );
-
-                    });
-
-
-                renderServices();
-
-                scrollToSection(
-                    "services"
-                );
-
-            }
-        );
-
-    });
-
-
-    const orders =
+    const orderButton =
         document.getElementById(
-            "footerOrders"
+            "footerOrderBtn"
+        );
+
+    const profileButton =
+        document.getElementById(
+            "footerProfileBtn"
         );
 
 
-    if (orders) {
+    if (orderButton) {
 
-        orders.addEventListener(
+        orderButton.addEventListener(
             "click",
-            function () {
-
-                renderOrders();
+            () => {
 
                 openModal(
                     "ordersModal"
@@ -2416,19 +1541,11 @@ function setupFooterButtons() {
     }
 
 
-    const profile =
-        document.getElementById(
-            "footerProfile"
-        );
+    if (profileButton) {
 
-
-    if (profile) {
-
-        profile.addEventListener(
+        profileButton.addEventListener(
             "click",
-            function () {
-
-                setupProfileData();
+            () => {
 
                 openModal(
                     "profileModal"
@@ -2439,111 +1556,138 @@ function setupFooterButtons() {
 
     }
 
-
-    const partner =
-        document.getElementById(
-            "footerPartner"
-        );
-
-
-    if (partner) {
-
-        partner.addEventListener(
-            "click",
-            function () {
-
-                openModal(
-                    "technicianModal"
-                );
-
-            }
-        );
-
-    }
-
-
-    const partnerButton =
-        document.getElementById(
-            "partnerButton"
-        );
-
-
-    if (partnerButton) {
-
-        partnerButton.addEventListener(
-            "click",
-            function () {
-
-                openModal(
-                    "technicianModal"
-                );
-
-            }
-        );
-
-    }
-
 }
 
 
 /* =========================================================
-   PROFILE
+   18. PROFILE
 ========================================================= */
 
 function setupProfile() {
 
-    setupProfileData();
+    const form =
+        document.getElementById(
+            "profileForm"
+        );
+
+    if (!form) return;
+
+
+    form.addEventListener(
+        "submit",
+        event => {
+
+            event.preventDefault();
+
+
+            const name =
+                getValue(
+                    "profileName"
+                );
+
+            const phone =
+                getValue(
+                    "profilePhone"
+                );
+
+
+            if (!name) {
+
+                showToast(
+                    "Nama belum diisi.",
+                    "!"
+                );
+
+                return;
+
+            }
+
+
+            if (!isValidPhone(phone)) {
+
+                showToast(
+                    "Nomor WhatsApp tidak valid.",
+                    "!"
+                );
+
+                return;
+
+            }
+
+
+            saveCustomer(
+                name,
+                phone
+            );
+
+
+            const customerName =
+                document.getElementById(
+                    "customerName"
+                );
+
+            const customerPhone =
+                document.getElementById(
+                    "customerPhone"
+                );
+
+
+            if (customerName)
+                customerName.value =
+                    name;
+
+            if (customerPhone)
+                customerPhone.value =
+                    phone;
+
+
+            showToast(
+                "Profil berhasil disimpan.",
+                "✓"
+            );
+
+
+            closeModal(
+                "profileModal"
+            );
+
+        }
+    );
 
 }
 
 
 /* =========================================================
-   PROFILE DATA
-========================================================= */
-
-function setupProfileData() {
-
-    const name =
-        document.getElementById(
-            "profileName"
-        );
-
-    const phone =
-        document.getElementById(
-            "profilePhone"
-        );
-
-
-    if (name) {
-
-        name.textContent =
-            currentCustomer.name ||
-            "Pelanggan";
-
-    }
-
-
-    if (phone) {
-
-        phone.textContent =
-            currentCustomer.phone ||
-            "-";
-
-    }
-
-}
-
-
-/* =========================================================
-   PARTNER FORM
+   19. PARTNER REGISTRATION
 ========================================================= */
 
 function setupPartnerForm() {
 
+    const button =
+        document.getElementById(
+            "joinTechnicianBtn"
+        );
+
     const form =
         document.getElementById(
-            "partnerForm"
+            "technicianForm"
         );
+
+
+    if (button) {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                openModal(
+                    "technicianModal"
+                );
+
+            }
+        );
+
+    }
 
 
     if (!form) return;
@@ -2551,56 +1695,121 @@ function setupPartnerForm() {
 
     form.addEventListener(
         "submit",
-        function (event) {
+        event => {
 
             event.preventDefault();
 
 
             const name =
-                getValue("partnerName");
+                getValue(
+                    "technicianName"
+                );
 
             const phone =
-                getValue("partnerPhone");
+                getValue(
+                    "technicianPhone"
+                );
 
-            const service =
-                getValue("partnerService");
+            const category =
+                getValue(
+                    "technicianCategory"
+                );
 
             const address =
-                getValue("partnerAddress");
+                getValue(
+                    "technicianAddress"
+                );
 
 
-            if (!name || !phone || !service || !address) {
+            if (!name) {
 
                 showToast(
-                    "error",
-                    "Lengkapi data mitra."
+                    "Nama wajib diisi.",
+                    "!"
                 );
 
                 return;
+
             }
 
 
-            const message =
-                `*PENDAFTARAN MITRA ${APP_NAME}*
+            if (!isValidPhone(phone)) {
 
-Nama:
+                showToast(
+                    "Nomor WhatsApp tidak valid.",
+                    "!"
+                );
+
+                return;
+
+            }
+
+
+            if (!category) {
+
+                showToast(
+                    "Pilih keahlian.",
+                    "!"
+                );
+
+                return;
+
+            }
+
+
+            if (!address) {
+
+                showToast(
+                    "Area layanan wajib diisi.",
+                    "!"
+                );
+
+                return;
+
+            }
+
+
+            if (
+                WHATSAPP_NUMBER.includes(
+                    "xxxxxxxxxx"
+                )
+            ) {
+
+                showToast(
+                    "Nomor WhatsApp admin belum diatur.",
+                    "!"
+                );
+
+                return;
+
+            }
+
+
+            const message = `
+
+*${APP_NAME} — PENDAFTARAN MITRA*
+
+🤝 *Pendaftaran Mitra Baru*
+
+👤 Nama:
 ${name}
 
-WhatsApp:
+📱 WhatsApp:
 ${phone}
 
-Keahlian:
-${service}
+🛠️ Keahlian:
+${category}
 
-Area Layanan:
-${address}`;
+📍 Area Layanan:
+${address}
+
+Saya ingin bergabung sebagai mitra ${APP_NAME}.
+
+`.trim();
 
 
             const url =
-                "https://wa.me/" +
-                WHATSAPP_NUMBER +
-                "?text=" +
-                encodeURIComponent(message);
+                `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 
 
             window.open(
@@ -2622,24 +1831,23 @@ ${address}`;
 
 
 /* =========================================================
-   NOTIFICATIONS
+   20. NOTIFICATIONS
 ========================================================= */
 
 function getNotifications() {
 
     try {
 
-        const saved =
+        const data =
             localStorage.getItem(
                 STORAGE_NOTIFICATIONS
             );
 
-
-        return saved
-            ? JSON.parse(saved)
+        return data
+            ? JSON.parse(data)
             : [];
 
-    } catch (error) {
+    } catch {
 
         return [];
 
@@ -2648,12 +1856,8 @@ function getNotifications() {
 }
 
 
-/* =========================================================
-   ADD NOTIFICATION
-========================================================= */
-
 function addNotification(
-    notification
+    message
 ) {
 
     const notifications =
@@ -2662,24 +1866,14 @@ function addNotification(
 
     notifications.unshift({
 
-        id:
-            Date.now(),
+        id: Date.now(),
 
-        orderId:
-            notification.orderId ||
-            null,
-
-        title:
-            notification.title,
-
-        message:
-            notification.message,
-
-        read:
-            false,
+        message,
 
         createdAt:
-            new Date().toISOString()
+            new Date().toISOString(),
+
+        read: false
 
     });
 
@@ -2687,7 +1881,10 @@ function addNotification(
     localStorage.setItem(
         STORAGE_NOTIFICATIONS,
         JSON.stringify(
-            notifications.slice(0, 50)
+            notifications.slice(
+                0,
+                20
+            )
         )
     );
 
@@ -2700,13 +1897,12 @@ function addNotification(
 
 function renderNotifications() {
 
-    const container =
+    const list =
         document.getElementById(
-            "notificationsList"
+            "notificationList"
         );
 
-
-    if (!container) return;
+    if (!list) return;
 
 
     const notifications =
@@ -2715,52 +1911,74 @@ function renderNotifications() {
 
     if (!notifications.length) {
 
-        container.innerHTML = `
+        list.innerHTML = `
 
-            <div class="empty-state">
+            <div class="notification-empty">
 
-                <div class="empty-icon">
-                    🔔
-                </div>
+                <div>🔔</div>
 
                 <h3>
-                    Belum Ada Notifikasi
+                    Belum ada notifikasi
                 </h3>
+
+                <p>
+                    Informasi pesanan akan
+                    muncul di sini.
+                </p>
 
             </div>
 
         `;
 
         return;
+
     }
 
 
-    container.innerHTML =
-        notifications.map(item => `
+    list.innerHTML = "";
 
-            <div class="notification-item">
+
+    notifications.forEach(
+        notification => {
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+            item.className =
+                "notification-item";
+
+
+            item.innerHTML = `
 
                 <strong>
-                    ${escapeHTML(
-                        item.title
-                    )}
+                    JASA KAMPUNG
                 </strong>
 
                 <p>
                     ${escapeHTML(
-                        item.message
+                        notification.message
                     )}
                 </p>
 
                 <small>
-                    ${formatDateTime(
-                        item.createdAt
+                    ${escapeHTML(
+                        formatDateTime(
+                            notification.createdAt
+                        )
                     )}
                 </small>
 
-            </div>
+            `;
 
-        `).join("");
+
+            list.appendChild(
+                item
+            );
+
+        }
+    );
 
 }
 
@@ -2776,23 +1994,19 @@ function setupNotifications() {
             "notificationBtn"
         );
 
-
     if (!button) return;
 
 
     button.addEventListener(
         "click",
-        function () {
-
-            renderNotifications();
-
-            markNotificationsRead();
-
-            updateNotificationBadge();
+        () => {
 
             openModal(
                 "notificationModal"
             );
+
+
+            markNotificationsRead();
 
         }
     );
@@ -2800,33 +2014,34 @@ function setupNotifications() {
 }
 
 
-/* =========================================================
-   MARK NOTIFICATIONS READ
-========================================================= */
-
 function markNotificationsRead() {
 
     const notifications =
         getNotifications();
 
 
-    notifications.forEach(item => {
-
-        item.read = true;
-
-    });
+    notifications.forEach(
+        item => {
+            item.read = true;
+        }
+    );
 
 
     localStorage.setItem(
         STORAGE_NOTIFICATIONS,
-        JSON.stringify(notifications)
+        JSON.stringify(
+            notifications
+        )
     );
+
+
+    updateNotificationBadge();
 
 }
 
 
 /* =========================================================
-   NOTIFICATION BADGE
+   BADGE
 ========================================================= */
 
 function updateNotificationBadge() {
@@ -2836,16 +2051,17 @@ function updateNotificationBadge() {
             "notificationBadge"
         );
 
-
     if (!badge) return;
 
 
+    const notifications =
+        getNotifications();
+
+
     const unread =
-        getNotifications()
-            .filter(
-                item => !item.read
-            )
-            .length;
+        notifications.filter(
+            item => !item.read
+        ).length;
 
 
     badge.textContent =
@@ -2861,7 +2077,7 @@ function updateNotificationBadge() {
 
 
 /* =========================================================
-   SHOW ALL SERVICES
+   21. SHOW ALL SERVICES
 ========================================================= */
 
 function setupShowAllServices() {
@@ -2871,13 +2087,12 @@ function setupShowAllServices() {
             "showAllServices"
         );
 
-
     if (!button) return;
 
 
     button.addEventListener(
         "click",
-        function () {
+        () => {
 
             currentCategory =
                 "Semua";
@@ -2887,15 +2102,17 @@ function setupShowAllServices() {
                 .querySelectorAll(
                     ".category-item"
                 )
-                .forEach(item => {
+                .forEach(
+                    item => {
 
-                    item.classList.toggle(
-                        "active",
-                        item.dataset.category ===
-                        "Semua"
-                    );
+                        item.classList.toggle(
+                            "active",
+                            item.dataset.category ===
+                                "Semua"
+                        );
 
-                });
+                    }
+                );
 
 
             const search =
@@ -2908,23 +2125,22 @@ function setupShowAllServices() {
 
                 search.value = "";
 
-            }
+                const clear =
+                    document.getElementById(
+                        "clearSearch"
+                    );
 
-
-            const clear =
-                document.getElementById(
-                    "clearSearch"
-                );
-
-
-            if (clear) {
-
-                clear.hidden = true;
+                if (clear)
+                    clear.hidden = true;
 
             }
 
 
-            renderServices();
+            filterServices(
+                "",
+                "Semua"
+            );
+
 
             scrollToSection(
                 "services"
@@ -2937,7 +2153,7 @@ function setupShowAllServices() {
 
 
 /* =========================================================
-   MINIMUM DATE
+   22. DATE
 ========================================================= */
 
 function setMinimumDate() {
@@ -2947,7 +2163,6 @@ function setMinimumDate() {
             "scheduleDate"
         );
 
-
     if (!input) return;
 
 
@@ -2955,62 +2170,43 @@ function setMinimumDate() {
         new Date();
 
 
-    const year =
-        now.getFullYear();
+    const offset =
+        now.getTimezoneOffset();
 
 
-    const month =
-        String(
-            now.getMonth() + 1
-        ).padStart(2, "0");
-
-
-    const day =
-        String(
-            now.getDate()
-        ).padStart(2, "0");
-
-
-    const hours =
-        String(
-            now.getHours()
-        ).padStart(2, "0");
-
-
-    const minutes =
-        String(
-            now.getMinutes()
-        ).padStart(2, "0");
+    const local =
+        new Date(
+            now.getTime() -
+            offset * 60000
+        );
 
 
     input.min =
-        `${year}-${month}-${day}T${hours}:${minutes}`;
+        local
+            .toISOString()
+            .slice(
+                0,
+                16
+            );
 
 }
 
-
-/* =========================================================
-   FORMAT DATE
-========================================================= */
 
 function formatDateTime(
     value
 ) {
 
-    if (!value) {
+    if (!value)
         return "-";
-    }
 
 
     const date =
         new Date(value);
 
 
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
+    if (Number.isNaN(
+        date.getTime()
+    )) {
 
         return value;
 
@@ -3020,8 +2216,11 @@ function formatDateTime(
     return date.toLocaleString(
         "id-ID",
         {
-            dateStyle: "medium",
-            timeStyle: "short"
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
         }
     );
 
@@ -3029,7 +2228,7 @@ function formatDateTime(
 
 
 /* =========================================================
-   ORDER CODE
+   23. ORDER CODE
 ========================================================= */
 
 function generateOrderCode() {
@@ -3041,14 +2240,21 @@ function generateOrderCode() {
     const date =
         now
             .toISOString()
-            .slice(0, 10)
-            .replace(/-/g, "");
+            .slice(
+                0,
+                10
+            )
+            .replace(
+                /-/g,
+                ""
+            );
 
 
     const random =
         Math.floor(
             1000 +
-            Math.random() * 9000
+            Math.random() *
+            9000
         );
 
 
@@ -3058,15 +2264,15 @@ function generateOrderCode() {
 
 
 /* =========================================================
-   RUPIAH
+   24. RUPIAH
 ========================================================= */
 
 function formatRupiah(
-    value
+    number
 ) {
 
-    const number =
-        Number(value) || 0;
+    const value =
+        Number(number) || 0;
 
 
     return new Intl.NumberFormat(
@@ -3074,36 +2280,49 @@ function formatRupiah(
         {
             style: "currency",
             currency: "IDR",
-            minimumFractionDigits: 0
+            maximumFractionDigits: 0
         }
-    ).format(number);
+    ).format(value);
 
 }
 
 
 /* =========================================================
-   PHONE VALIDATION
+   25. PHONE VALIDATION
 ========================================================= */
 
 function isValidPhone(
     phone
 ) {
 
-    const value =
-        String(phone || "")
-            .replace(/\s+/g, "")
-            .replace(/-/g, "");
+    const cleaned =
+        phone.replace(
+            /\D/g,
+            ""
+        );
 
 
-    return /^(08|62|8)\d{8,13}$/.test(
-        value
+    if (
+        cleaned.length < 10 ||
+        cleaned.length > 15
+    ) {
+
+        return false;
+
+    }
+
+
+    return (
+        cleaned.startsWith("08") ||
+        cleaned.startsWith("62") ||
+        cleaned.startsWith("8")
     );
 
 }
 
 
 /* =========================================================
-   GET VALUE
+   26. GET VALUE
 ========================================================= */
 
 function getValue(id) {
@@ -3111,16 +2330,16 @@ function getValue(id) {
     const element =
         document.getElementById(id);
 
+    if (!element)
+        return "";
 
-    return element
-        ? element.value.trim()
-        : "";
+    return element.value.trim();
 
 }
 
 
 /* =========================================================
-   FOCUS
+   27. FOCUS
 ========================================================= */
 
 function focusElement(id) {
@@ -3128,20 +2347,15 @@ function focusElement(id) {
     const element =
         document.getElementById(id);
 
-
     if (!element) return;
 
-
-    setTimeout(
-        () => element.focus(),
-        50
-    );
+    element.focus();
 
 }
 
 
 /* =========================================================
-   ESCAPE HTML
+   28. ESCAPE HTML
 ========================================================= */
 
 function escapeHTML(
@@ -3176,25 +2390,12 @@ function escapeHTML(
 
 
 /* =========================================================
-   ESCAPE ATTRIBUTE
-========================================================= */
-
-function escapeAttribute(
-    value
-) {
-
-    return escapeHTML(value);
-
-}
-
-
-/* =========================================================
-   TOAST
+   29. TOAST
 ========================================================= */
 
 function showToast(
-    type,
-    message
+    message,
+    icon = "✓"
 ) {
 
     const toast =
@@ -3202,53 +2403,33 @@ function showToast(
             "toast"
         );
 
-    const icon =
-        document.getElementById(
-            "toastIcon"
-        );
-
-    const text =
+    const toastMessage =
         document.getElementById(
             "toastMessage"
         );
 
-
-    if (!toast || !text) {
-
-        console.log(message);
-
-        return;
-
-    }
+    const toastIcon =
+        document.getElementById(
+            "toastIcon"
+        );
 
 
-    const icons = {
-
-        success: "✓",
-
-        error: "✕",
-
-        info: "ℹ",
-
-        warning: "!"
-
-    };
+    if (!toast) return;
 
 
-    if (icon) {
-
-        icon.textContent =
-            icons[type] ||
-            "ℹ";
-
-    }
+    if (toastMessage)
+        toastMessage.textContent =
+            message;
 
 
-    text.textContent =
-        message;
+    if (toastIcon)
+        toastIcon.textContent =
+            icon;
 
 
-    toast.hidden = false;
+    toast.classList.add(
+        "show"
+    );
 
 
     clearTimeout(
@@ -3258,19 +2439,21 @@ function showToast(
 
     toastTimer =
         setTimeout(
-            function () {
+            () => {
 
-                toast.hidden = true;
+                toast.classList.remove(
+                    "show"
+                );
 
             },
-            3500
+            3000
         );
 
 }
 
 
 /* =========================================================
-   UPDATE YEAR
+   30. YEAR
 ========================================================= */
 
 function updateYear() {
@@ -3280,11 +2463,11 @@ function updateYear() {
             "currentYear"
         );
 
-
     if (year) {
 
         year.textContent =
-            new Date().getFullYear();
+            new Date()
+                .getFullYear();
 
     }
 
@@ -3292,7 +2475,7 @@ function updateYear() {
 
 
 /* =========================================================
-   PUBLIC API
+   31. PUBLIC API
 ========================================================= */
 
 window.JasaKampung = {
@@ -3301,18 +2484,21 @@ window.JasaKampung = {
         openBookingModal,
 
     openOrders:
-        () => openModal("ordersModal"),
+        () =>
+            openModal(
+                "ordersModal"
+            ),
 
     openProfile:
-        () => openModal("profileModal"),
+        () =>
+            openModal(
+                "profileModal"
+            ),
 
-    getOrders:
-        getOrders,
+    getOrders,
 
     getCustomer:
-        () => currentCustomer,
-
-    getServices:
-        () => allServices
+        () =>
+            currentCustomer
 
 };
